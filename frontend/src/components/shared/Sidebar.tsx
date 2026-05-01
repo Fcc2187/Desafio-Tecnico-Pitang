@@ -82,7 +82,6 @@ export const Sidebar = () => {
         backgroundImage: 'radial-gradient(ellipse at 20% 0%, rgba(200,16,46,0.08) 0%, transparent 60%)',
       }}
     >
-      {/* Logo */}
       <Box px="20px" py="22px" borderBottom="1px solid" borderColor="var(--p-border)">
         <Flex align="center" gap="10px">
           <Box
@@ -106,7 +105,6 @@ export const Sidebar = () => {
         </Flex>
       </Box>
 
-      {/* Nav */}
       <Box flex={1} overflowY="auto" px="12px" py="16px">
         <Text
           color="var(--p-text-muted)"
@@ -132,7 +130,6 @@ export const Sidebar = () => {
         </Stack>
       </Box>
 
-      {/* User Footer */}
       <Box px="12px" py="16px" borderTop="1px solid" borderColor="var(--p-border)">
         <Flex
           align="center"

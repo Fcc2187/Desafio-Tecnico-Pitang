@@ -5,7 +5,7 @@ import { AppError } from '../../utils/AppError';
 export const uploadAttachment = async (req: Request, res: Response) => {
   const id = req.params.id as string;
   const userId = req.user!.id;
-  const { fileName, fileUrl, fileType } = req.body;
+  const { nomeArquivo, urlArquivo, tipoArquivo } = req.body;
 
   const reimbursement = await prisma.reimbursement.findUnique({ where: { id } });
 
@@ -15,9 +15,9 @@ export const uploadAttachment = async (req: Request, res: Response) => {
   const attachment = await prisma.attachment.create({
     data: {
       solicitacaoId: id,
-      nomeArquivo: fileName,
-      urlArquivo: fileUrl,
-      tipoArquivo: fileType,
+      nomeArquivo: nomeArquivo,
+      urlArquivo: urlArquivo,
+      tipoArquivo: tipoArquivo,
     },
   });
 

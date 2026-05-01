@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/auth/LoginPage';
+import { RegisterPage } from './pages/auth/RegisterPage';
 import { AuthRoute } from './components/shared/AuthRoute';
 import { DashboardLayout } from './components/shared/DashboardLayout';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
@@ -12,6 +13,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         
         <Route element={<AuthRoute />}>
           <Route element={<DashboardLayout />}>

@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { Box, Flex, Heading, Input, Stack, Text } from '@chakra-ui/react';
+import { Box, Flex, Heading, Input, Stack, Text, Link as ChakraLink } from '@chakra-ui/react';
 import { Field } from '../../components/ui/field';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth } from '../../contexts/AuthContext';
 import * as authService from '../../services/auth.service';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, Receipt } from 'lucide-react';
+
 
 const loginSchema = z.object({
   email: z.string().email('Email inválido'),
@@ -228,6 +229,16 @@ export const LoginPage = () => {
                   </>
                 )}
               </button>
+
+              <Text textAlign="center" fontSize="14px" mt="8px" color="var(--s-muted)">
+                Ainda não tem uma conta?{' '}
+                <Link 
+                  to="/register" 
+                  style={{ color: 'var(--p-accent)', fontWeight: '700', textDecoration: 'none' }}
+                >
+                  Criar conta
+                </Link>
+              </Text>
             </Stack>
           </form>
         </Box>

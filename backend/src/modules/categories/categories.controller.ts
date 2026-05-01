@@ -11,13 +11,10 @@ export const getCategories = async (req: Request, res: Response) => {
 };
 
 export const createCategory = async (req: Request, res: Response) => {
-  const { nome, ativo } = req.body;
+  const { nome, limiteValor } = req.body;
 
   const category = await prisma.category.create({
-    data: {
-      nome,
-      ativo: ativo ?? true,
-    },
+    data: { nome, limiteValor },
   });
 
   res.status(201).json(category);
@@ -25,21 +22,22 @@ export const createCategory = async (req: Request, res: Response) => {
 
 export const updateCategory = async (req: Request, res: Response) => {
   const id = req.params.id as string;
-  const { nome, ativo } = req.body;
+  const { nome, ativo, limiteValor } = req.body;
 
-  const categoryExists = await prisma.category.findUnique({ where: { id } });
+  const item = await prisma.category.findUnique({ where: { id } });
 
-  if (!categoryExists) {
+  if (!item) {
     throw new AppError('Categoria não encontrada', 404);
   }
 
-  const updatedCategory = await prisma.category.update({
+  const updated = await prisma.category.update({
     where: { id },
     data: {
       nome,
       ativo,
+      limiteValor,
     },
   });
 
-  res.json(updatedCategory);
+  res.json(updated);
 };

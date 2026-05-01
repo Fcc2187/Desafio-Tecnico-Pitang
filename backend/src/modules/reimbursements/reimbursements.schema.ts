@@ -5,7 +5,20 @@ export const createReimbursementSchema = z.object({
     categoriaId: z.string().uuid('ID de categoria inválido'),
     descricao: z.string().min(3, 'Descrição muito curta'),
     valor: z.number().positive('O valor deve ser maior que zero'),
-    dataDespesa: z.string().datetime('Data da despesa inválida'),
+    dataDespesa: z.string().datetime('Data da despesa inválida').refine(date => new Date(date) <= new Date(), 'A data não pode ser no futuro'),
+    attachments: z.array(z.object({
+      nomeArquivo: z.string(),
+      urlArquivo: z.string().url('URL do arquivo inválida'),
+      tipoArquivo: z.string()
+    })).optional(),
+  }).superRefine((data, ctx) => {
+    if (data.valor > 1000 && (!data.attachments || data.attachments.length === 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Comprovante obrigatório para valores acima de R$ 1.000,00',
+        path: ['attachments'],
+      });
+    }
   }),
 });
 
@@ -17,7 +30,20 @@ export const updateReimbursementSchema = z.object({
     categoriaId: z.string().uuid('ID de categoria inválido').optional(),
     descricao: z.string().min(3, 'Descrição muito curta').optional(),
     valor: z.number().positive('O valor deve ser maior que zero').optional(),
-    dataDespesa: z.string().datetime('Data da despesa inválida').optional(),
+    dataDespesa: z.string().datetime('Data da despesa inválida').optional().refine(date => !date || new Date(date) <= new Date(), 'A data não pode ser no futuro'),
+    attachments: z.array(z.object({
+      nomeArquivo: z.string(),
+      urlArquivo: z.string().url('URL do arquivo inválida'),
+      tipoArquivo: z.string()
+    })).optional(),
+  }).superRefine((data, ctx) => {
+    if (data.valor && data.valor > 1000 && (!data.attachments || data.attachments.length === 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Comprovante obrigatório para valores acima de R$ 1.000,00',
+        path: ['attachments'],
+      });
+    }
   }),
 });
 

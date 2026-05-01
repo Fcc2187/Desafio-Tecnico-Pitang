@@ -16,12 +16,29 @@ export interface Reimbursement {
   createdAt: string;
 }
 
-export const list = async (): Promise<Reimbursement[]> => {
-  const response = await api.get('/reimbursements');
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+export const list = async (page: number = 1, filters?: { status?: string, categoriaId?: string, colaborador?: string, sortField?: string, sortOrder?: string }): Promise<PaginatedResponse<Reimbursement>> => {
+  let url = `/reimbursements?page=${page}&limit=10`;
+  if (filters?.status) url += `&status=${filters.status}`;
+  if (filters?.categoriaId) url += `&categoriaId=${filters.categoriaId}`;
+  if (filters?.colaborador) url += `&colaborador=${filters.colaborador}`;
+  if (filters?.sortField) url += `&sortField=${filters.sortField}`;
+  if (filters?.sortOrder) url += `&sortOrder=${filters.sortOrder}`;
+  
+  const response = await api.get(url);
   return response.data;
 };
 
-export const getDetail = async (id: string): Promise<any> => {
+export const getById = async (id: string): Promise<any> => {
   const response = await api.get(`/reimbursements/${id}`);
   return response.data;
 };
@@ -66,7 +83,13 @@ export const listCategories = async () => {
   return response.data;
 };
 
-export const createCategory = async (nome: string) => {
-  const response = await api.post('/categories', { nome });
+export const createCategory = async (nome: string, limiteValor?: number | null) => {
+  const response = await api.post('/categories', { nome, limiteValor });
   return response.data;
 };
+
+export const updateCategory = async (id: string, data: { nome?: string, ativo?: boolean, limiteValor?: number | null }) => {
+  const response = await api.put(`/categories/${id}`, data);
+  return response.data;
+};
+

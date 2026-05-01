@@ -140,9 +140,9 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "fileName": "recibo_almoco.pdf",
-  "fileUrl": "https://storage.empresa.com/files/recibo123.pdf",
-  "fileType": "application/pdf"
+  "nomeArquivo": "recibo_almoco.pdf",
+  "urlArquivo": "https://storage.empresa.com/files/recibo123.pdf",
+  "tipoArquivo": "application/pdf"
 }
 
 ### 18. Listar Anexos de uma Solicitação

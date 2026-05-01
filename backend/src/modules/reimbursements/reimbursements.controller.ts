@@ -4,13 +4,17 @@ import { AppError } from '../../utils/AppError';
 import { Perfil, ReimbursementStatus, HistoryAction, Prisma } from '@prisma/client';
 
 export const createReimbursement = async (req: Request, res: Response) => {
-  const { categoriaId, descricao, valor, dataDespesa } = req.body;
+  const { categoriaId, descricao, valor, dataDespesa, attachments } = req.body;
   const solicitanteId = req.user!.id;
 
   const category = await prisma.category.findUnique({ where: { id: categoriaId } });
 
   if (!category || !category.ativo) {
     throw new AppError('Categoria não encontrada ou inativa', 400);
+  }
+
+  if (category.limiteValor && valor > Number(category.limiteValor)) {
+    throw new AppError(`O valor excede o limite permitido para esta categoria (Máx: R$ ${Number(category.limiteValor).toFixed(2)})`, 400);
   }
 
   const reimbursement = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -22,6 +26,13 @@ export const createReimbursement = async (req: Request, res: Response) => {
         valor,
         dataDespesa: new Date(dataDespesa),
         status: ReimbursementStatus.RASCUNHO,
+        attachments: attachments ? {
+          create: attachments.map((a: any) => ({
+            nomeArquivo: a.nomeArquivo,
+            urlArquivo: a.urlArquivo,
+            tipoArquivo: a.tipoArquivo,
+          })),
+        } : undefined,
       },
     });
 
@@ -42,29 +53,59 @@ export const createReimbursement = async (req: Request, res: Response) => {
 
 export const listReimbursements = async (req: Request, res: Response) => {
   const { id, perfil } = req.user!;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const skip = (page - 1) * limit;
 
-  let where = {};
+  const { status, categoriaId, colaborador, sortField, sortOrder } = req.query;
 
-  //se for colaborador, vê apenas os dele
+  let where: any = {};
+
   if (perfil === Perfil.COLABORADOR) {
-    where = { solicitanteId: id };
-  } 
-  //se for financeiro, só vê os aprovados ou pagos
-  else if (perfil === Perfil.FINANCEIRO) {
-    where = { status: { in: [ReimbursementStatus.APROVADO, ReimbursementStatus.PAGO] } };
+    where.solicitanteId = id;
+  } else if (perfil === Perfil.FINANCEIRO) {
+    where.status = { in: [ReimbursementStatus.APROVADO, ReimbursementStatus.PAGO] };
   }
-  //gestor e Admin veem todos
 
-  const items = await prisma.reimbursement.findMany({
-    where,
-    include: {
-      solicitante: { select: { nome: true, email: true } },
-      categoria: { select: { nome: true } },
-    },
-    orderBy: { criadoEm: 'desc' },
+  if (status) {
+    where.status = status as string;
+  }
+  if (categoriaId) {
+    where.categoriaId = categoriaId as string;
+  }
+  if (colaborador) {
+    where.solicitante = {
+      nome: { contains: colaborador as string, mode: 'insensitive' }
+    };
+  }
+
+  // Ordenação dinâmica
+  const orderByField = (sortField as string) || 'criadoEm';
+  const orderDirection = (sortOrder as string) || 'desc';
+
+  const [items, total] = await Promise.all([
+    prisma.reimbursement.findMany({
+      where,
+      include: {
+        solicitante: { select: { nome: true, email: true } },
+        categoria: { select: { nome: true } },
+      },
+      orderBy: { [orderByField]: orderDirection },
+      skip,
+      take: limit,
+    }),
+    prisma.reimbursement.count({ where }),
+  ]);
+
+  res.json({
+    data: items,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    }
   });
-
-  res.json(items);
 };
 
 export const getReimbursementDetail = async (req: Request, res: Response) => {
@@ -105,7 +146,19 @@ export const updateReimbursement = async (req: Request, res: Response) => {
   if (item.solicitanteId !== userId) throw new AppError('Ação permitida apenas para o dono', 403);
   if (item.status !== ReimbursementStatus.RASCUNHO) throw new AppError('Apenas rascunhos podem ser editados', 400);
 
+  const finalCategoryId = categoriaId || item.categoriaId;
+  const finalValor = valor || item.valor;
+
+  const category = await prisma.category.findUnique({ where: { id: finalCategoryId } });
+  if (category?.limiteValor && Number(finalValor) > Number(category.limiteValor)) {
+    throw new AppError(`O valor excede o limite permitido para esta categoria (Máx: R$ ${Number(category.limiteValor).toFixed(2)})`, 400);
+  }
+
   const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    if (req.body.attachments) {
+      await tx.attachment.deleteMany({ where: { solicitacaoId: id } });
+    }
+
     const res = await tx.reimbursement.update({
       where: { id },
       data: {
@@ -113,6 +166,13 @@ export const updateReimbursement = async (req: Request, res: Response) => {
         descricao,
         valor,
         dataDespesa: dataDespesa ? new Date(dataDespesa) : undefined,
+        attachments: req.body.attachments ? {
+          create: req.body.attachments.map((a: any) => ({
+            nomeArquivo: a.nomeArquivo,
+            urlArquivo: a.urlArquivo,
+            tipoArquivo: a.tipoArquivo,
+          })),
+        } : undefined,
       },
     });
 
