@@ -1,19 +1,8 @@
 import { useState } from 'react';
-import { 
-  Box, 
-  Heading, 
-  Flex, 
-  Table, 
-  Text, 
-  Spinner, 
-  Center,
-  Input,
-  Stack
-} from '@chakra-ui/react';
+import { Box, Flex, Table, Text, Spinner, Center, Input, Stack, Heading } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as reimbursementService from '../../services/reimbursements.service';
 import { Plus, X, Tag } from 'lucide-react';
-import { Button } from '../../components/ui/button';
 import { Field } from '../../components/ui/field';
 
 export const CategoriesPage = () => {
@@ -21,7 +10,7 @@ export const CategoriesPage = () => {
   const [newCategoryName, setNewCategoryName] = useState('');
   const queryClient = useQueryClient();
 
-  const { data: categories, isLoading, error } = useQuery({
+  const { data: categories, isLoading } = useQuery({
     queryKey: ['categories'],
     queryFn: reimbursementService.listCategories,
   });
@@ -38,45 +27,70 @@ export const CategoriesPage = () => {
     }
   });
 
-  if (isLoading) {
-    return <Center h="400px"><Spinner color="teal.500" /></Center>;
-  }
+  if (isLoading) return <Center h="400px"><Spinner color="var(--p-accent)" /></Center>;
 
   return (
     <Box>
-      <Flex justify="space-between" align="center" mb={8}>
-        <Box>
-          <Heading size="lg">Categorias de Despesa</Heading>
-          <Text color="gray.600">Gerencie as categorias disponíveis para reembolso.</Text>
-        </Box>
-        <Button bg="teal.500" color="white" onClick={() => setIsFormOpen(true)}>
-          <Plus size={18} style={{ marginRight: '8px' }} /> Nova Categoria
-        </Button>
-      </Flex>
+      <Box mb="32px" pb="24px" borderBottom="1px solid var(--s-border)">
+        <Flex justify="space-between" align="flex-end">
+          <Box>
+            <Text fontSize="11px" fontWeight="700" color="var(--p-accent)" letterSpacing="0.08em" textTransform="uppercase" mb="4px">
+              Administração
+            </Text>
+            <Heading fontSize="26px" fontWeight="800" letterSpacing="-0.03em" color="#111">
+              Categorias de Despesa
+            </Heading>
+            <Text color="var(--s-muted)" fontSize="14px" mt="4px">Gerencie as categorias disponíveis para reembolso.</Text>
+          </Box>
+          <button
+            onClick={() => setIsFormOpen(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '12px 20px', borderRadius: '10px',
+              background: 'var(--p-accent)', color: 'white',
+              border: 'none', cursor: 'pointer',
+              fontSize: '14px', fontWeight: '600',
+              boxShadow: '0 4px 14px var(--p-accent-glow)',
+              fontFamily: 'inherit',
+            }}
+          >
+            <Plus size={16} /> Nova Categoria
+          </button>
+        </Flex>
+      </Box>
 
-      <Box bg="white" borderRadius="lg" border="1px solid" borderColor="gray.200" overflow="hidden" maxW="800px">
-        <Table.Root>
-          <Table.Header>
-            <Table.Row bg="gray.50">
-              <Table.ColumnHeader>Nome da Categoria</Table.ColumnHeader>
-              <Table.ColumnHeader>Status</Table.ColumnHeader>
-              <Table.ColumnHeader textAlign="right">Ações</Table.ColumnHeader>
+      <Box
+        bg="white"
+        borderRadius="16px"
+        border="1px solid"
+        borderColor="var(--s-border)"
+        overflow="hidden"
+        maxW="800px"
+        style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}
+      >
+        <Table.Root variant="line" size="md">
+          <Table.Header bg="#f9fafb">
+            <Table.Row>
+              <Table.ColumnHeader color="#ffffff" fontWeight="600" fontSize="12px" py={4} px={6}>NOME DA CATEGORIA</Table.ColumnHeader>
+              <Table.ColumnHeader color="#ffffff" fontWeight="600" fontSize="12px" py={4} px={6} textAlign="right">STATUS</Table.ColumnHeader>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {categories?.map((cat: any) => (
-              <Table.Row key={cat.id}>
-                <Table.Cell fontWeight="medium">
-                  <Flex align="center" gap={2}>
-                    <Tag size={16} color="#319795" />
-                    {cat.nome}
+              <Table.Row key={cat.id} bg="white" _hover={{ bg: "#f9fafb" }} transition="all 0.2s">
+                <Table.Cell py={4} px={6}>
+                  <Flex align="center" gap={3}>
+                    <Box p={2} bg="rgba(200,16,46,0.08)" borderRadius="8px">
+                      <Tag size={14} color="var(--p-accent)" />
+                    </Box>
+                    <Text fontWeight="600" fontSize="14px" color="#101828">{cat.nome}</Text>
                   </Flex>
                 </Table.Cell>
-                <Table.Cell>
-                  <Text color="green.500" fontSize="sm" fontWeight="bold">ATIVO</Text>
-                </Table.Cell>
-                <Table.Cell textAlign="right">
-                  <Button variant="ghost" size="sm" disabled>Editar</Button>
+                <Table.Cell py={4} px={6} textAlign="right">
+                  <Flex align="center" gap={2} justify="flex-end">
+                    <Box w="6px" h="6px" borderRadius="full" bg="#10a37f" />
+                    <Text fontSize="12px" fontWeight="700" color="#10a37f">Ativo</Text>
+                  </Flex>
                 </Table.Cell>
               </Table.Row>
             ))}
@@ -84,32 +98,43 @@ export const CategoriesPage = () => {
         </Table.Root>
       </Box>
 
-      {/* Manual Drawer para Nova Categoria */}
       {isFormOpen && (
         <>
-          <Box position="fixed" top={0} left={0} w="100vw" h="100vh" bg="blackAlpha.600" zIndex={1000} onClick={() => setIsFormOpen(false)} />
-          <Box position="fixed" top={0} right={0} w="400px" h="100vh" bg="white" zIndex={1001} boxShadow="2xl" p={8}>
-            <Flex justify="flex-end" mb={4}>
-              <Box cursor="pointer" onClick={() => setIsFormOpen(false)} p={2} _hover={{ bg: 'gray.100' }} borderRadius="full"><X size={20} /></Box>
+          <Box position="fixed" top={0} left={0} w="100vw" h="100vh" bg="rgba(0,0,0,0.4)" zIndex={1000} onClick={() => setIsFormOpen(false)} />
+          <Box position="fixed" top={0} right={0} w="440px" h="100vh" bg="white" zIndex={1001} boxShadow="-10px 0 30px rgba(0,0,0,0.1)" p="40px">
+            <Flex justify="flex-end" mb="24px">
+              <Box as="button" onClick={() => setIsFormOpen(false)} p="8px" borderRadius="full" _hover={{ bg: "gray.100" }} border="none" bg="transparent" cursor="pointer">
+                <X size={20} />
+              </Box>
             </Flex>
-            <Stack gap={6}>
-              <Heading size="md">Nova Categoria</Heading>
-              <Field label="Nome da Categoria">
-                <Input 
-                  value={newCategoryName} 
-                  onChange={(e) => setNewCategoryName(e.target.value)} 
-                  placeholder="Ex: Viagens, Alimentação..." 
+            <Stack gap="24px">
+              <Box>
+                <Heading fontSize="22px" fontWeight="800" color="#111" mb="6px">Nova Categoria</Heading>
+                <Text fontSize="14px" color="var(--s-muted)">Defina o nome da nova categoria de reembolso.</Text>
+              </Box>
+              <Field label="Nome">
+                <Input
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="Ex: Refeições, Hospedagem..."
+                  size="lg"
+                  style={{ borderRadius: '10px', border: '1.5px solid var(--s-border)', fontSize: '14px' }}
                 />
               </Field>
-              <Button 
-                bg="teal.500" 
-                color="white" 
+              <button
                 onClick={() => mutation.mutate(newCategoryName)}
-                loading={mutation.isPending}
-                disabled={!newCategoryName.trim()}
+                disabled={!newCategoryName.trim() || mutation.isPending}
+                style={{
+                  width: '100%', padding: '14px', borderRadius: '10px',
+                  background: !newCategoryName.trim() ? '#e4e7ec' : 'var(--p-accent)',
+                  color: !newCategoryName.trim() ? '#98a2b3' : 'white',
+                  border: 'none', cursor: !newCategoryName.trim() ? 'not-allowed' : 'pointer',
+                  fontSize: '14px', fontWeight: '600', fontFamily: 'inherit',
+                  transition: 'all 0.2s', boxShadow: newCategoryName.trim() ? '0 4px 14px var(--p-accent-glow)' : 'none'
+                }}
               >
-                Criar Categoria
-              </Button>
+                {mutation.isPending ? 'Salvando...' : 'Salvar Categoria'}
+              </button>
             </Stack>
           </Box>
         </>

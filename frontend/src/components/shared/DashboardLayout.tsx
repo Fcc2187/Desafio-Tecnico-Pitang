@@ -4,13 +4,14 @@ import { Sidebar } from './Sidebar';
 
 export const DashboardLayout = () => {
   return (
-    <Flex h="100vh" bg="gray.50">
+    <Flex minH="100vh" bg="var(--s-bg)">
       <Sidebar />
       <Box 
-        ml="280px" 
+        ml="var(--sidebar-w)"
         flex={1} 
-        p={8} 
+        p="32px 36px"
         overflowY="auto"
+        minH="100vh"
       >
         <Outlet />
       </Box>
