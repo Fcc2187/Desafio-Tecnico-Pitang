@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:latest
+    container_name: pitang_reimbursement_db
+    environment:
+      POSTGRES_USER: pitang_user
+      POSTGRES_PASSWORD: pitang_password
+      POSTGRES_DB: pitang_reimbursements
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+volumes:
+  postgres_data:
