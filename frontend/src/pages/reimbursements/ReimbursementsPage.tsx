@@ -17,6 +17,8 @@ const statusMap: Record<string, { label: string; color: string }> = {
 
 export const ReimbursementsPage = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [editingItem, setEditingItem] = useState<any>(null);
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
   const [categoriaFilter, setCategoriaFilter] = useState('');
