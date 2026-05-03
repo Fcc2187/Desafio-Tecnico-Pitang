@@ -1,6 +1,8 @@
-import { Box, Flex, Heading, Text, SimpleGrid } from '@chakra-ui/react';
+import { Box, Flex, Heading, Text, SimpleGrid, Spinner, Center, Badge, Stack } from '@chakra-ui/react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Clock, CheckCircle, DollarSign, TrendingUp } from 'lucide-react';
+import { Clock, CheckCircle, DollarSign, TrendingUp, History } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import * as reimbursementService from '../../services/reimbursements.service';
 
 interface StatCardProps {
   label: string;
@@ -51,6 +53,25 @@ const StatCard = ({ label, value, helpText, icon: Icon, accentColor }: StatCardP
 export const DashboardPage = () => {
   const { user } = useAuth();
 
+  const { data, isLoading } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: reimbursementService.getStats,
+  });
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+  };
+
+  if (isLoading) {
+    return (
+      <Center h="400px">
+        <Spinner color="var(--p-accent)" size="xl" />
+      </Center>
+    );
+  }
+
+  const { stats, recentActivities } = data || { stats: { pendentes: 0, aprovadasMes: 0, totalPago: 0 }, recentActivities: [] };
+
   return (
     <Box>
       {/* Page Header */}
@@ -95,21 +116,21 @@ export const DashboardPage = () => {
       <SimpleGrid columns={{ base: 1, md: 2, xl: 4 }} gap="16px" mb="28px">
         <StatCard
           label="Pendentes"
-          value="0"
+          value={String(stats.pendentes)}
           helpText="Aguardando análise"
           icon={Clock}
           accentColor="#f7b733"
         />
         <StatCard
           label="Aprovadas"
-          value="R$ 0,00"
+          value={formatCurrency(stats.aprovadasMes)}
           helpText="Este mês"
           icon={CheckCircle}
           accentColor="var(--p-green)"
         />
         <StatCard
           label="Total Pago"
-          value="R$ 0,00"
+          value={formatCurrency(stats.totalPago)}
           helpText="Creditado em conta"
           icon={DollarSign}
           accentColor="var(--p-blue)"
@@ -134,29 +155,64 @@ export const DashboardPage = () => {
         <Box px="24px" py="18px" borderBottom="1px solid var(--s-border)">
           <Text fontWeight="700" fontSize="15px" color="var(--s-text)">Atividades Recentes</Text>
         </Box>
-        <Flex
-          direction="column"
-          align="center"
-          justify="center"
-          py="60px"
-          px="24px"
-        >
-          <Box
-            w="52px" h="52px" borderRadius="14px"
-            bg="var(--s-bg)"
-            border="1px solid var(--s-border)"
-            display="flex" alignItems="center" justifyContent="center"
-            mb="14px"
+        
+        {recentActivities.length > 0 ? (
+          <Stack gap={0}>
+            {recentActivities.map((activity: any) => (
+              <Box 
+                key={activity.id} 
+                px="24px" py="16px" 
+                borderBottom="1px solid var(--s-border)"
+                _last={{ borderBottom: 'none' }}
+                _hover={{ bg: 'gray.50' }}
+                transition="background 0.2s"
+              >
+                <Flex justify="space-between" align="center">
+                  <Flex align="center" gap={3}>
+                    <Box p={2} bg="gray.100" borderRadius="8px">
+                      <History size={16} color="var(--s-muted)" />
+                    </Box>
+                    <Box>
+                      <Text fontSize="14px" fontWeight="600" color="var(--s-text)">
+                        {activity.solicitacao.descricao}
+                      </Text>
+                      <Text fontSize="12px" color="var(--s-muted)">
+                        {activity.usuario.nome} • {new Date(activity.criadoEm).toLocaleString('pt-BR')}
+                      </Text>
+                    </Box>
+                  </Flex>
+                  <Badge variant="subtle" colorPalette="blue" fontSize="10px">
+                    {activity.acao}
+                  </Badge>
+                </Flex>
+              </Box>
+            ))}
+          </Stack>
+        ) : (
+          <Flex
+            direction="column"
+            align="center"
+            justify="center"
+            py="60px"
+            px="24px"
           >
-            <Clock size={22} color="var(--s-muted)" />
-          </Box>
-          <Text fontWeight="600" color="var(--s-text)" fontSize="14px" mb="4px">
-            Nenhuma atividade recente
-          </Text>
-          <Text color="var(--s-muted)" fontSize="13px" textAlign="center" maxW="280px">
-            Crie sua primeira solicitação de reembolso para ver o histórico aqui.
-          </Text>
-        </Flex>
+            <Box
+              w="52px" h="52px" borderRadius="14px"
+              bg="var(--s-bg)"
+              border="1px solid var(--s-border)"
+              display="flex" alignItems="center" justifyContent="center"
+              mb="14px"
+            >
+              <Clock size={22} color="var(--s-muted)" />
+            </Box>
+            <Text fontWeight="600" color="var(--s-text)" fontSize="14px" mb="4px">
+              Nenhuma atividade recente
+            </Text>
+            <Text color="var(--s-muted)" fontSize="13px" textAlign="center" maxW="280px">
+              Crie sua primeira solicitação de reembolso para ver o histórico aqui.
+            </Text>
+          </Flex>
+        )}
       </Box>
     </Box>
   );

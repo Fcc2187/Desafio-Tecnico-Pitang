@@ -38,6 +38,11 @@ export const list = async (page: number = 1, filters?: { status?: string, catego
   return response.data;
 };
 
+export const getStats = async (): Promise<any> => {
+  const response = await api.get('/reimbursements/stats');
+  return response.data;
+};
+
 export const getById = async (id: string): Promise<any> => {
   const response = await api.get(`/reimbursements/${id}`);
   return response.data;
@@ -75,6 +80,11 @@ export const pay = async (id: string) => {
 
 export const cancel = async (id: string) => {
   const response = await api.post(`/reimbursements/${id}/cancel`);
+  return response.data;
+};
+
+export const uploadAttachment = async (reimbursementId: string, data: { nomeArquivo: string, urlArquivo: string, tipoArquivo: string }) => {
+  const response = await api.post(`/reimbursements/${reimbursementId}/attachments`, data);
   return response.data;
 };
 

@@ -20,9 +20,12 @@ export const CategoriesPage = () => {
 
   const mutation = useMutation({
     mutationFn: (data: any) => {
-      const payload = { ...data, limiteValor: data.limiteValor ? Number(data.limiteValor) : null };
-      if (editingCategory) {
-        return reimbursementService.updateCategory(editingCategory.id, payload);
+      const { id: dataId, ...rest } = data;
+      const id = dataId || editingCategory?.id;
+      const payload = { ...rest, limiteValor: rest.limiteValor !== undefined ? (rest.limiteValor ? Number(rest.limiteValor) : null) : undefined };
+      
+      if (id) {
+        return reimbursementService.updateCategory(id, payload);
       }
       return reimbursementService.createCategory(payload.nome, payload.limiteValor);
     },
@@ -44,7 +47,7 @@ export const CategoriesPage = () => {
   };
 
   const handleToggleStatus = (cat: any) => {
-    mutation.mutate({ ativo: !cat.ativo });
+    mutation.mutate({ id: cat.id, ativo: !cat.ativo });
   };
 
   const handleClose = () => {

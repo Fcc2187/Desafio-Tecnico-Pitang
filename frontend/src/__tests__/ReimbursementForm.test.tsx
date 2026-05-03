@@ -14,7 +14,7 @@ vi.mock('../services/reimbursements.service', () => ({
 describe('ReimbursementForm', () => {
   it('deve exibir erro se a data for no futuro', async () => {
     const user = userEvent.setup();
-    render(<ReimbursementForm isOpen={true} onClose={() => {}} />);
+    render(<ReimbursementForm onClose={() => {}} />);
     
     await waitFor(() => expect(screen.queryByText(/Alimentação/i)).toBeInTheDocument());
 
@@ -39,7 +39,7 @@ describe('ReimbursementForm', () => {
 
   it('deve exigir anexo para valores acima de R$ 1.000,00', async () => {
     const user = userEvent.setup();
-    render(<ReimbursementForm isOpen={true} onClose={() => {}} />);
+    render(<ReimbursementForm onClose={() => {}} />);
     
     await waitFor(() => expect(screen.queryByText(/Alimentação/i)).toBeInTheDocument());
 

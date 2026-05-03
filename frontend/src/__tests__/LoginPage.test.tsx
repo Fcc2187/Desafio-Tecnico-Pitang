@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '../test/test-utils';
+import { render, screen, fireEvent } from '../test/test-utils';
 import { LoginPage } from '../pages/auth/LoginPage';
 
 vi.mock('../services/auth.service', () => ({

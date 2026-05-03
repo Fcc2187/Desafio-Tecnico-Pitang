@@ -28,7 +28,7 @@ describe('Controle de Acesso - ReimbursementDetail', () => {
       token: 'fake',
       login: vi.fn(),
       logout: vi.fn(),
-      isAuthenticated: true
+      loading: false
     });
 
     renderDetail();
@@ -40,13 +40,12 @@ describe('Controle de Acesso - ReimbursementDetail', () => {
   });
 
   it('Gestor DEVE ver o botão de Aprovar em solicitações ENVIADAS', async () => {
-    // Forja um Gestor logado
     vi.spyOn(AuthContext, 'useAuth').mockReturnValue({
       user: { id: 'g1', nome: 'Maria Gestora', email: 'maria@pitang.com', perfil: 'GESTOR' },
       token: 'fake',
       login: vi.fn(),
       logout: vi.fn(),
-      isAuthenticated: true
+      loading: false
     });
 
     renderDetail();
