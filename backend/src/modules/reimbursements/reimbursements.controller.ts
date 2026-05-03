@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import dayjs from 'dayjs';
 import { prisma } from '../../prisma';
 import { AppError } from '../../utils/AppError';
 import { Perfil, ReimbursementStatus, HistoryAction, Prisma } from '@prisma/client';
@@ -24,7 +25,7 @@ export const createReimbursement = async (req: Request, res: Response) => {
         categoriaId,
         descricao,
         valor,
-        dataDespesa: new Date(dataDespesa),
+        dataDespesa: dayjs(dataDespesa).toDate(),
         status: ReimbursementStatus.RASCUNHO,
         attachments: attachments ? {
           create: attachments.map((a: any) => ({
@@ -165,7 +166,7 @@ export const updateReimbursement = async (req: Request, res: Response) => {
         categoriaId,
         descricao,
         valor,
-        dataDespesa: dataDespesa ? new Date(dataDespesa) : undefined,
+        dataDespesa: dataDespesa ? dayjs(dataDespesa).toDate() : undefined,
         attachments: req.body.attachments ? {
           create: req.body.attachments.map((a: any) => ({
             nomeArquivo: a.nomeArquivo,
@@ -338,4 +339,56 @@ export const cancelReimbursement = async (req: Request, res: Response) => {
   });
 
   res.json({ message: 'Solicitação cancelada' });
+};
+
+export const getDashboardStats = async (req: Request, res: Response) => {
+  const { id, perfil } = req.user!;
+  
+  const where: any = {};
+  if (perfil === Perfil.COLABORADOR) {
+    where.solicitanteId = id;
+  }
+
+  const startOfMonth = dayjs().startOf('month').toDate();
+
+  const [
+    pendentes,
+    aprovadasMes,
+    totalPago,
+    recentActivities
+  ] = await Promise.all([
+    prisma.reimbursement.count({
+      where: { ...where, status: ReimbursementStatus.ENVIADO }
+    }),
+    prisma.reimbursement.aggregate({
+      where: { 
+        ...where, 
+        status: ReimbursementStatus.APROVADO,
+        criadoEm: { gte: startOfMonth }
+      },
+      _sum: { valor: true }
+    }),
+    prisma.reimbursement.aggregate({
+      where: { ...where, status: ReimbursementStatus.PAGO },
+      _sum: { valor: true }
+    }),
+    prisma.reimbursementHistory.findMany({
+      where: { solicitacao: where },
+      include: {
+        solicitacao: { select: { id: true, descricao: true } },
+        usuario: { select: { nome: true } }
+      },
+      orderBy: { criadoEm: 'desc' },
+      take: 5
+    })
+  ]);
+
+  res.json({
+    stats: {
+      pendentes,
+      aprovadasMes: aprovadasMes._sum.valor || 0,
+      totalPago: totalPago._sum.valor || 0,
+    },
+    recentActivities
+  });
 };

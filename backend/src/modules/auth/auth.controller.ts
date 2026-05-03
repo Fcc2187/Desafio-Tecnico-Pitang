@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../../prisma';
 import { AppError } from '../../utils/AppError';
-import { config as env } from '../../config/env';
+import { config as env } from '../../env';
 
 export const login = async (req: Request, res: Response) => {
   const { email, senha } = req.body;

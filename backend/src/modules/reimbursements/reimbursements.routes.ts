@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as controller from './reimbursements.controller';
 import { authenticate } from '../../middlewares/authenticate';
 import { authorize } from '../../middlewares/authorize';
+import { attachmentsRoutes } from '../attachments/attachments.routes';
 import { validate } from '../../middlewares/validate';
 import { 
   createReimbursementSchema, 
@@ -16,6 +17,7 @@ const routes = Router();
 routes.use(authenticate);
 
 routes.get('/', controller.listReimbursements);
+routes.get('/stats', controller.getDashboardStats);
 
 routes.get('/:id', validate(idParamSchema), controller.getReimbursementDetail);
 
@@ -67,5 +69,7 @@ routes.post(
   validate(idParamSchema), 
   controller.cancelReimbursement
 );
+
+routes.use('/:id/attachments', attachmentsRoutes);
 
 export { routes as reimbursementRoutes };

@@ -107,7 +107,42 @@ describe('Reimbursements Module Integration Tests', () => {
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toBe(200);
-    expect(response.body.length).toBe(1);
-    expect(response.body[0].descricao).toBe('Meu Reembolso');
+    expect(response.body.data.length).toBe(1);
+    expect(response.body.data[0].descricao).toBe('Meu Reembolso');
+  });
+
+  it('should be able to add an attachment and generate history', async () => {
+    const createResponse = await request(app)
+      .post('/reimbursements')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        categoriaId: categoryId,
+        descricao: 'Viagem SP',
+        valor: 500,
+        dataDespesa: new Date().toISOString()
+      });
+    
+    const reimbursementId = createResponse.body.id;
+
+    const attachResponse = await request(app)
+      .post(`/reimbursements/${reimbursementId}/attachments`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        nomeArquivo: 'comprovante.pdf',
+        urlArquivo: 'https://storage.com/file.pdf',
+        tipoArquivo: 'application/pdf'
+      });
+
+    expect(attachResponse.status).toBe(201);
+    expect(attachResponse.body.nomeArquivo).toBe('comprovante.pdf');
+
+    const historyResponse = await request(app)
+      .get(`/reimbursements/${reimbursementId}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    const history = historyResponse.body.history;
+    const hasAttachmentHistory = history.some((h: any) => h.observacao.includes('Anexo adicionado'));
+    
+    expect(hasAttachmentHistory).toBe(true);
   });
 });

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../../prisma';
 import { AppError } from '../../utils/AppError';
+import { HistoryAction } from '@prisma/client';
 
 export const uploadAttachment = async (req: Request, res: Response) => {
   const id = req.params.id as string;
@@ -12,13 +13,26 @@ export const uploadAttachment = async (req: Request, res: Response) => {
   if (!reimbursement) throw new AppError('Solicitação não encontrada', 404);
   if (reimbursement.solicitanteId !== userId) throw new AppError('Ação permitida apenas para o dono', 403);
 
-  const attachment = await prisma.attachment.create({
-    data: {
-      solicitacaoId: id,
-      nomeArquivo: nomeArquivo,
-      urlArquivo: urlArquivo,
-      tipoArquivo: tipoArquivo,
-    },
+  const attachment = await prisma.$transaction(async (tx) => {
+    const att = await tx.attachment.create({
+      data: {
+        solicitacaoId: id,
+        nomeArquivo: nomeArquivo,
+        urlArquivo: urlArquivo,
+        tipoArquivo: tipoArquivo,
+      },
+    });
+
+    await tx.reimbursementHistory.create({
+      data: {
+        solicitacaoId: id,
+        usuarioId: userId,
+        acao: HistoryAction.UPDATED,
+        observacao: `Anexo adicionado: ${nomeArquivo}`,
+      },
+    });
+
+    return att;
   });
 
   res.status(201).json(attachment);

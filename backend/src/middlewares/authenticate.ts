@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { verify } from 'jsonwebtoken';
 import { AppError } from '../utils/AppError';
 import { Perfil } from '@prisma/client';
-import { config } from '../config/env';
+import { config } from '../env';
 
 export interface TokenPayload {
   id: string;

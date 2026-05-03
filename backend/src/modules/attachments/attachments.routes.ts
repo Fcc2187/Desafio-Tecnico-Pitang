@@ -11,9 +11,9 @@ const attachmentsRoutes = Router({ mergeParams: true });
 
 attachmentsRoutes.use(authenticate);
 
-attachmentsRoutes.get('/:id/attachments', validate(idParamSchema), getAttachments);
+attachmentsRoutes.get('/', validate(idParamSchema), getAttachments);
 attachmentsRoutes.post(
-  '/:id/attachments', 
+  '/', 
   authorize([Perfil.COLABORADOR]), 
   validate(uploadAttachmentSchema), 
   uploadAttachment
