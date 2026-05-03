@@ -95,6 +95,30 @@ docker-compose up -d
 
 ---
 
+## 📂 Estrutura do Projeto
+
+O projeto foi organizado seguindo princípios de **Clean Code** e **Modularização**, facilitando a manutenção e escalabilidade.
+
+### **Backend (`/backend`)**
+A arquitetura é orientada a módulos (features):
+- `src/modules/`: Contém os módulos da aplicação (Auth, Users, Categories, Reimbursements, History, Attachments). Cada módulo possui:
+    - `routes.ts`: Definição das rotas e permissões.
+    - `controller.ts`: Lógica de controle e orquestração.
+    - `schema.ts`: Validações de entrada via Zod.
+- `src/middlewares/`: Middlewares globais (Autenticação, Tratamento de Erros, Validação de Schemas).
+- `src/config/`: Configurações de upload (Multer) e variáveis de ambiente.
+- `prisma/`: Schema do banco de dados e scripts de Seed.
+
+### **Frontend (`/frontend`)**
+Organizado por responsabilidades:
+- `src/pages/`: Componentes de página (Views) organizados por domínio (Dashboard, Reimbursements, Users, etc).
+- `src/components/`: Componentes reutilizáveis (Layout, Sidebar, UI base).
+- `src/services/`: Camada de comunicação com a API (Axios).
+- `src/contexts/`: Gerenciamento de estado global (Autenticação).
+- `src/__tests__/`: Suíte de testes unitários e de integração.
+
+---
+
 ## 👤 Usuários para Teste (Credenciais)
 
 Utilize os usuários abaixo (criados via Seed) para navegar pelos diferentes fluxos:
