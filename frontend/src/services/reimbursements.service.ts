@@ -83,8 +83,15 @@ export const cancel = async (id: string) => {
   return response.data;
 };
 
-export const uploadAttachment = async (reimbursementId: string, data: { nomeArquivo: string, urlArquivo: string, tipoArquivo: string }) => {
-  const response = await api.post(`/reimbursements/${reimbursementId}/attachments`, data);
+export const uploadAttachment = async (reimbursementId: string, file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await api.post(`/reimbursements/${reimbursementId}/attachments`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return response.data;
 };
 

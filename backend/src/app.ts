@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import dayjs from 'dayjs';
+import path from 'path';
+import uploadConfig from './config/upload';
 import { errorHandler } from './middlewares/errorHandler';
 import { authRoutes } from './modules/auth/auth.routes';
 import { usersRoutes } from './modules/users/users.routes';
@@ -15,6 +17,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use('/files', express.static(uploadConfig.directory));
 
 app.get('/health', (req, res) => {
   return res.json({ status: 'ok', timestamp: dayjs().toISOString() });

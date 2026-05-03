@@ -41,3 +41,31 @@ export const getMe = async (req: Request, res: Response) => {
 
   res.json(user);
 };
+
+export const updateUser = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { nome, perfil } = req.body;
+
+  const user = await prisma.user.findUnique({ where: { id: String(id) } });
+
+  if (!user) {
+    throw new AppError('Usuário não encontrado', 404);
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: String(id) },
+    data: {
+      nome: nome || undefined,
+      perfil: perfil || undefined,
+    },
+    select: {
+      id: true,
+      nome: true,
+      email: true,
+      perfil: true,
+      criadoEm: true,
+    }
+  });
+
+  res.json(updatedUser);
+};

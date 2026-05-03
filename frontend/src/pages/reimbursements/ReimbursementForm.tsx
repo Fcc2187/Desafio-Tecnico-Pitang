@@ -14,7 +14,8 @@ import { Button } from '../../components/ui/button';
 import { Field } from '../../components/ui/field';
 import * as reimbursementService from '../../services/reimbursements.service';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link as LinkIcon } from 'lucide-react';
+import { FileText, Upload } from 'lucide-react';
+import { useState } from 'react';
 
 const reimbursementSchema = z.object({
   descricao: z.string().min(5, 'Descrição muito curta'),
@@ -25,15 +26,6 @@ const reimbursementSchema = z.object({
     return new Date(date) <= today;
   }, 'A data não pode ser no futuro'),
   categoriaId: z.string().min(1, 'Selecione uma categoria'),
-  anexoUrl: z.string().url('URL inválida').optional().or(z.literal('')),
-}).superRefine((data, ctx) => {
-  if (Number(data.valor) > 1000 && !data.anexoUrl) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'Comprovante obrigatório para valores acima de R$ 1.000,00',
-      path: ['anexoUrl'],
-    });
-  }
 });
 
 type ReimbursementFormValues = z.infer<typeof reimbursementSchema>;
@@ -46,6 +38,8 @@ interface ReimbursementFormProps {
 export const ReimbursementForm = ({ onClose, initialData }: ReimbursementFormProps) => {
   const queryClient = useQueryClient();
   const isEditing = !!initialData;
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   
   const { data: categories, isLoading: loadingCategories } = useQuery({
     queryKey: ['categories'],
@@ -55,6 +49,7 @@ export const ReimbursementForm = ({ onClose, initialData }: ReimbursementFormPro
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<ReimbursementFormValues>({
     resolver: zodResolver(reimbursementSchema),
@@ -63,29 +58,34 @@ export const ReimbursementForm = ({ onClose, initialData }: ReimbursementFormPro
       valor: String(initialData.valor),
       dataDespesa: new Date(initialData.dataDespesa).toISOString().split('T')[0],
       categoriaId: initialData.categoriaId,
-      anexoUrl: initialData.attachments?.[0]?.urlArquivo || '',
     } : undefined
   });
 
+  const currentValor = watch('valor');
+
   const mutation = useMutation({
-    mutationFn: (data: any) => {
-      const attachments = data.anexoUrl ? [{
-        nomeArquivo: 'Comprovante',
-        urlArquivo: data.anexoUrl,
-        tipoArquivo: 'image'
-      }] : [];
+    mutationFn: async (data: any) => {
+      // 1. Validar anexo se valor > 1000
+      if (Number(data.valor) > 1000 && !selectedFile && !initialData?.attachments?.length) {
+        throw new Error('Comprovante obrigatório para valores acima de R$ 1.000,00');
+      }
 
       const payload = { 
         descricao: data.descricao,
         valor: Number(data.valor),
         dataDespesa: new Date(data.dataDespesa).toISOString(),
         categoriaId: data.categoriaId,
-        attachments 
       };
 
-      return isEditing 
-        ? reimbursementService.update(initialData.id, payload)
-        : reimbursementService.create(payload);
+      const reimbursement = isEditing 
+        ? await reimbursementService.update(initialData.id, payload)
+        : await reimbursementService.create(payload);
+      
+      if (selectedFile) {
+        await reimbursementService.uploadAttachment(reimbursement.id, selectedFile);
+      }
+
+      return reimbursement;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reimbursements'] });
@@ -93,12 +93,24 @@ export const ReimbursementForm = ({ onClose, initialData }: ReimbursementFormPro
       onClose();
     },
     onError: (error: any) => {
-      alert(error.response?.data?.message || 'Erro ao salvar');
+      alert(error.message || error.response?.data?.message || 'Erro ao salvar');
     }
   });
 
   const onSubmit = (data: ReimbursementFormValues) => {
     mutation.mutate(data);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        setFileError('Arquivo muito grande (máx 5MB)');
+        return;
+      }
+      setSelectedFile(file);
+      setFileError(null);
+    }
   };
 
   return (
@@ -108,7 +120,7 @@ export const ReimbursementForm = ({ onClose, initialData }: ReimbursementFormPro
           {isEditing ? 'Editar Solicitação' : 'Nova Solicitação'}
         </Heading>
         <Text color="var(--s-muted)" fontSize="14px">
-          {isEditing ? 'Atualize os dados e o comprovante.' : 'Preencha os dados da despesa abaixo.'}
+          Preencha os dados e anexe o comprovante original.
         </Text>
       </Box>
 
@@ -158,20 +170,45 @@ export const ReimbursementForm = ({ onClose, initialData }: ReimbursementFormPro
           </Flex>
 
           <Field 
-            label="Link do Comprovante (Opcional)" 
-            invalid={!!errors.anexoUrl} 
-            errorText={errors.anexoUrl?.message}
-            helperText="Cole aqui a URL da imagem ou PDF do recibo."
+            label={Number(currentValor) > 1000 ? "Comprovante (Obrigatório)" : "Comprovante (Opcional)"}
+            invalid={!!fileError} 
+            errorText={fileError || ''}
+            helperText="Selecione uma imagem ou PDF do recibo."
           >
-            <Flex align="center" gap={2}>
-               <Box p={2} bg="gray.100" borderRadius="8px"><LinkIcon size={16} /></Box>
-               <Input 
-                 {...register('anexoUrl')} 
-                 placeholder="https://..." 
-                 style={{ borderRadius: '10px', border: '1.5px solid var(--s-border)', background: 'white' }}
-               />
-            </Flex>
+            <Box 
+              position="relative" 
+              p={4} border="2px dashed" borderColor={fileError ? "red.300" : "var(--s-border)"} 
+              borderRadius="12px" bg="gray.50" _hover={{ bg: "gray.100" }} transition="all 0.2s"
+            >
+              <input 
+                type="file" 
+                onChange={handleFileChange} 
+                accept="image/*,application/pdf"
+                style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
+              />
+              <Flex direction="column" align="center" gap={2}>
+                {selectedFile ? (
+                   <>
+                     <FileText size={24} color="var(--p-accent)" />
+                     <Text fontSize="13px" fontWeight="600" color="#111">{selectedFile.name}</Text>
+                     <Text fontSize="11px" color="gray.500">Clique para trocar o arquivo</Text>
+                   </>
+                ) : (
+                  <>
+                    <Upload size={24} color="gray.400" />
+                    <Text fontSize="13px" fontWeight="600" color="gray.600">Clique para selecionar</Text>
+                    <Text fontSize="11px" color="gray.500">PDF, PNG ou JPG (máx. 5MB)</Text>
+                  </>
+                )}
+              </Flex>
+            </Box>
           </Field>
+
+          {isEditing && initialData.attachments?.length > 0 && !selectedFile && (
+            <Text fontSize="11px" color="blue.600" fontWeight="600">
+              ✓ Já existe um comprovante anexado. Selecione um novo apenas se quiser substituir.
+            </Text>
+          )}
 
           <Flex gap={3} pt={4}>
             <Button variant="ghost" onClick={onClose} flex={1}>Cancelar</Button>

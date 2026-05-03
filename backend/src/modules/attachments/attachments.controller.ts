@@ -6,9 +6,16 @@ import { HistoryAction } from '@prisma/client';
 export const uploadAttachment = async (req: Request, res: Response) => {
   const id = req.params.id as string;
   const userId = req.user!.id;
-  const { nomeArquivo, urlArquivo, tipoArquivo } = req.body;
+  
+  if (!req.file) {
+    throw new AppError('Arquivo é obrigatório', 400);
+  }
 
-  const reimbursement = await prisma.reimbursement.findUnique({ where: { id } });
+  const { filename, originalname, mimetype } = req.file;
+  const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+  const urlArquivo = `${baseUrl}/files/${filename}`;
+
+  const reimbursement = await prisma.reimbursement.findUnique({ where: { id: String(id) } });
 
   if (!reimbursement) throw new AppError('Solicitação não encontrada', 404);
   if (reimbursement.solicitanteId !== userId) throw new AppError('Ação permitida apenas para o dono', 403);
@@ -16,19 +23,19 @@ export const uploadAttachment = async (req: Request, res: Response) => {
   const attachment = await prisma.$transaction(async (tx) => {
     const att = await tx.attachment.create({
       data: {
-        solicitacaoId: id,
-        nomeArquivo: nomeArquivo,
+        solicitacaoId: String(id),
+        nomeArquivo: originalname,
         urlArquivo: urlArquivo,
-        tipoArquivo: tipoArquivo,
+        tipoArquivo: mimetype.split('/')[0],
       },
     });
 
     await tx.reimbursementHistory.create({
       data: {
-        solicitacaoId: id,
+        solicitacaoId: String(id),
         usuarioId: userId,
         acao: HistoryAction.UPDATED,
-        observacao: `Anexo adicionado: ${nomeArquivo}`,
+        observacao: `Anexo carregado: ${originalname}`,
       },
     });
 

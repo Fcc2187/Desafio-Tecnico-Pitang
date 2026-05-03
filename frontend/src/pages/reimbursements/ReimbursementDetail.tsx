@@ -121,19 +121,51 @@ export const ReimbursementDetail = ({ reimbursement: initialItem, onClose, onEdi
       </Box>
       
       {item.attachments?.length > 0 && (
-        <Box bg="blue.50" p="16px" borderRadius="14px" border="1px dashed" borderColor="blue.200">
-          <Flex align="center" gap={3} justify="space-between">
-            <Flex align="center" gap={3}>
-              <Box p={2} bg="blue.100" borderRadius="8px"><FileText size={16} color="#2b6cb0" /></Box>
-              <Box>
-                <Text fontSize="13px" fontWeight="700" color="#2b6cb0">Comprovante em anexo</Text>
-                <Text fontSize="11px" color="#4a5568">Verifique o recibo desta despesa</Text>
+        <Box>
+          <Text fontWeight="800" fontSize="12px" color="var(--s-muted)" textTransform="uppercase" mb="12px" letterSpacing="0.05em">Anexos ({item.attachments.length})</Text>
+          <Stack gap={3}>
+            {item.attachments.map((att: any) => (
+              <Box 
+                key={att.id}
+                bg="white" p="12px" borderRadius="12px" border="1px solid" borderColor="var(--s-border)"
+                transition="all 0.2s" _hover={{ borderColor: "var(--p-accent)", bg: "blue.50" }}
+              >
+                <Flex align="center" gap={3} justify="space-between">
+                  <Flex align="center" gap={3}>
+                    {att.tipoArquivo === 'image' || att.urlArquivo.match(/\.(jpg|jpeg|png|gif)$/i) ? (
+                      <Box 
+                        w="44px" h="44px" borderRadius="8px" overflow="hidden" border="1px solid var(--s-border)"
+                        bg="gray.100" flexShrink={0}
+                      >
+                        <img src={att.urlArquivo} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </Box>
+                    ) : (
+                      <Box p={3} bg="blue.100" borderRadius="8px" flexShrink={0}>
+                        <FileText size={18} color="#2b6cb0" />
+                      </Box>
+                    )}
+                    <Box overflow="hidden">
+                      <Text fontSize="13px" fontWeight="700" color="#101828" isTruncated>{att.nomeArquivo}</Text>
+                      <Text fontSize="11px" color="var(--s-muted)">Clique para abrir o arquivo original</Text>
+                    </Box>
+                  </Flex>
+                  <a 
+                    href={att.urlArquivo} 
+                    target="_blank" 
+                    rel="noreferrer" 
+                    style={{ 
+                      textDecoration: 'none', background: 'var(--p-accent)', 
+                      padding: '8px 14px', borderRadius: '8px', 
+                      fontSize: '12px', fontWeight: '700', color: 'white', 
+                      boxShadow: '0 4px 10px var(--p-accent-glow)' 
+                    }}
+                  >
+                    Abrir
+                  </a>
+                </Flex>
               </Box>
-            </Flex>
-            <a href={item.attachments[0].urlArquivo} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', background: 'white', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '700', color: '#2b6cb0', border: '1px solid #bee3f8' }}>
-              Visualizar →
-            </a>
-          </Flex>
+            ))}
+          </Stack>
         </Box>
       )}
 
