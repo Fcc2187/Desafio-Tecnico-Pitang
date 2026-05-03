@@ -1,55 +1,63 @@
 # 🚀 Pitang Reimburse - Sistema de Gestão de Reembolsos
 
-Este é um sistema completo para controle de solicitações de reembolso, desenvolvido como parte do desafio técnico da Pitang Agile IT. A solução abrange desde a criação de rascunhos por colaboradores até o processamento final de pagamento pelo setor financeiro, com fluxos de aprovação e auditoria rigorosos.
+Este é um sistema completo para controle de solicitações de reembolso, desenvolvido como parte do desafio técnico da **Pitang Agile IT**. A solução abrange desde a criação de rascunhos por colaboradores até o processamento final de pagamento pelo setor financeiro, com fluxos de aprovação e auditoria rigorosos.
+
+---
 
 ## 🛠️ Tecnologias Utilizadas
 
 ### **Backend**
 - **Node.js & TypeScript**
-- **Express**: Framework web.
+- **Express**: Framework web robusto.
 - **Prisma ORM**: Modelagem e persistência de dados (PostgreSQL).
-- **Zod**: Validação de esquemas e dados de entrada.
-- **DayJS**: Manipulação e validação de datas e fusos horários.
-- **JWT & BcryptJS**: Autenticação segura e hash de senhas.
-- **Jest & Supertest**: Testes de integração.
+- **Multer**: Middleware para upload de arquivos reais.
+- **Zod**: Validação rigorosa de esquemas e dados de entrada.
+- **DayJS**: Manipulação inteligente de datas e validações temporais.
+- **JWT & BcryptJS**: Autenticação segura e criptografia de senhas.
+- **Jest & Supertest**: Testes de integração automatizados.
 
 ### **Frontend**
-- **React & TypeScript**
-- **Vite**: Ferramenta de build e desenvolvimento.
-- **Chakra UI v3**: Biblioteca de componentes e estilização premium.
-- **TanStack Query (React Query)**: Gerenciamento de estado assíncrono e cache.
-- **React Hook Form & Zod**: Formulários robustos e validados.
-- **Lucide React**: Ícones modernos.
-- **Vitest**: Framework de testes unitários e de componentes.
+- **React 18 & TypeScript**
+- **Vite**: Ferramenta de build ultra-rápida.
+- **Chakra UI v3**: Design System premium e responsivo.
+- **TanStack Query (React Query)**: Cache e gerenciamento de estado assíncrono.
+- **React Hook Form**: Performance em formulários complexos.
+- **Lucide React**: Biblioteca de ícones modernos.
+- **Vitest**: Framework de testes moderno.
 
 ---
 
-## ✨ Funcionalidades e Diferenciais
+## ✨ Funcionalidades e Diferenciais (Plus)
 
-### **1. Fluxo de Vida Completo (Máquina de Estados)**
-O sistema gerencia o ciclo completo de um reembolso:
-`RASCUNHO -> ENVIADO -> APROVADO/REJEITADO -> PAGO`.
-Existem travas de segurança que impedem ações inválidas (ex: editar um pedido que já foi pago ou aprovado).
+O projeto cumpre **100% dos requisitos obrigatórios** e implementa diversos diferenciais técnicos:
 
-### **2. Controle de Acesso Baseado em Perfis (RBAC)**
-- **COLABORADOR**: Cria, edita (rascunhos) e acompanha seus próprios pedidos.
-- **GESTOR**: Visualiza, aprova ou rejeita (com justificativa obrigatória) os pedidos enviados.
-- **FINANCEIRO**: Processa os pagamentos de pedidos já aprovados.
-- **ADMIN**: Gestão total de categorias de despesa (criar, editar, inativar).
+### **1. Fluxo de Vida e Máquina de Estados**
+Gerenciamento rígido do ciclo: `RASCUNHO -> ENVIADO -> APROVADO/REJEITADO -> PAGO`.
+Travas de segurança impedem que um pedido aprovado seja editado ou um cancelado seja pago.
 
-### **3. Auditoria e Histórico Detalhado**
-Toda e qualquer alteração em um reembolso (mudança de status, edição de valores ou novos anexos) gera um registro automático na tabela de histórico, informando **quem** fez, **quando** fez e **o que** foi feito.
+### **2. Upload Real de Comprovantes (Local)**
+Diferente de simulações com links, este sistema permite o **upload real** de arquivos (PDF, PNG, JPG). Os arquivos são armazenados no servidor e servidos como estáticos com previews automáticos na interface.
 
-### **4. Regras de Negócio Avançadas**
-- **Limites por Categoria**: O Admin pode definir um valor máximo por categoria. O sistema bloqueia solicitações que excedam esse limite.
-- **Anexo Obrigatório**: Solicitações acima de **R$ 1.000,00** exigem obrigatoriamente o upload/link de um comprovante.
-- **Validação Temporal**: Bloqueio de datas futuras para despesas utilizando a biblioteca **DayJS**.
+### **3. Controle de Acesso Baseado em Perfis (RBAC)**
+- **ADMIN**: Gestão total de categorias e **gerenciamento de usuários** (alteração de perfis).
+- **GESTOR**: Análise técnica, aprovação e rejeição com justificativa.
+- **FINANCEIRO**: Visão consolidada de aprovados e processamento de pagamentos.
+- **COLABORADOR**: Gestão de solicitações próprias e auditoria.
 
-### **5. Diferenciais Técnicos (Plus)**
-- **Dashboard Dinâmico**: Painel com indicadores de gastos do mês, solicitações pendentes e feed de atividades recentes.
-- **Paginação e Filtros**: Listagem de reembolsos com paginação no backend e filtros combinados (Status, Categoria, Nome do Colaborador).
-- **Ordenação**: Suporte a ordenação dinâmica por valor, data ou descrição.
-- **Segurança**: Interceptor de resposta no frontend para redirecionamento automático em caso de token expirado (401).
+### **4. Auditoria e Histórico Detalhado**
+Toda ação (criação, edição, upload, aprovação) gera uma entrada na trilha de auditoria informando **quem**, **quando** e **o que** foi alterado.
+
+### **5. Dashboard e Inteligência**
+Painel dinâmico com:
+- Total de reembolsos pagos (acumulado).
+- Valor aprovado no mês atual.
+- Contagem de solicitações pendentes.
+- Feed de atividades recentes em tempo real.
+
+### **6. Regras de Negócio Implementadas**
+- **Limites por Categoria**: Valor máximo configurável por tipo de despesa.
+- **Anexo Obrigatório**: Travas para solicitações acima de **R$ 1.000,00**.
+- **Bloqueio de Datas Futuras**: Impedimento de lançamentos antecipados.
 
 ---
 
@@ -57,73 +65,60 @@ Toda e qualquer alteração em um reembolso (mudança de status, edição de val
 
 ### **Pré-requisitos**
 - Node.js (v18 ou superior)
-- Docker e Docker Compose (para o banco de dados)
+- Docker e Docker Compose
 
 ### **1. Configuração do Banco de Dados**
-Na raiz da pasta `backend`, suba o container do PostgreSQL:
+Na raiz da pasta `backend`, inicie o PostgreSQL via Docker:
 ```bash
 docker-compose up -d
 ```
 
 ### **2. Configuração do Backend**
-1. Acesse a pasta `backend`: `cd backend`
-2. Instale as dependências: `npm install`
-3. Configure o arquivo `.env` (existe um modelo no projeto ou use as flags padrão):
+1. Acesse `cd backend` e instale: `npm install`.
+2. Configure o `.env` (use o `env.example` como base):
    ```env
-   DATABASE_URL="postgresql://postgres:postgres@localhost:5433/pitang_reimburse?schema=public"
-   JWT_SECRET="sua_chave_secreta_aqui"
+   DATABASE_URL="postgresql://pitang_user:pitang_password@127.0.0.1:5433/pitang_reimbursements?schema=public"
+   JWT_SECRET="gerar_via_node"
    PORT=3000
    ```
-   > Você pode gerar uma `JWT_SECRET` segura rodando o comando:
-   > `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
-
-4. Execute as migrações do Prisma:
+3. Rode as migrações e o **Seed** (popula o banco com dados de teste):
    ```bash
    npm run migrate
-   ```
-5. Popule o banco com dados de teste (Seed):
-   ```bash
    npm run seed
    ```
-6. Inicie o servidor:
-   ```bash
-   npm run dev
-   ```
+4. Inicie: `npm run dev`.
 
 ### **3. Configuração do Frontend**
-1. Acesse a pasta `frontend`: `cd ../frontend`
-2. Instale as dependências: `npm install`
-3. Inicie a aplicação:
-   ```bash
-   npm run dev
-   ```
-4. Acesse `http://localhost:5173` no seu navegador.
+1. Acesse `cd frontend` e instale: `npm install`.
+2. Inicie: `npm run dev`.
+3. Acesse `http://localhost:5173`.
 
 ---
 
-## 👤 Usuários de Teste (Seed)
+## 👤 Usuários para Teste (Credenciais)
 
-Após rodar o comando de `seed`, você pode utilizar as seguintes credenciais para testar os diferentes fluxos:
+Utilize os usuários abaixo (criados via Seed) para navegar pelos diferentes fluxos:
 
 | Perfil | Email | Senha |
 |---|---|---|
-| **Admin** | admin@pitang.com | 123456 |
+| **Administrador** | admin@pitang.com | 123456 |
 | **Gestor** | gestor@pitang.com | 123456 |
 | **Financeiro** | financeiro@pitang.com | 123456 |
 | **Colaborador** | colaborador1@pitang.com | 123456 |
 
 ---
 
-## 🧪 Rodando os Testes
+## 📂 Documentação e Coleção API (Postman)
 
-### **Backend**
-```bash
-cd backend
-npm test
-```
+Na raiz do projeto, você encontrará o arquivo `postman_collection.json`. 
+- **Dica**: Importe-o no Postman para testar todos os endpoints. Ele já possui scripts para salvar o Token JWT automaticamente após o login.
 
-### **Frontend**
-```bash
-cd frontend
-npm run test
-```
+---
+
+## 🧪 Qualidade e Testes
+
+O projeto conta com uma suíte de testes que cobre as regras de negócio críticas.
+- **Backend**: `cd backend && npm test`
+- **Frontend**: `cd frontend && npm run test`
+
+---
