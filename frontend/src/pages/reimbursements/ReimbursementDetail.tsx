@@ -119,7 +119,7 @@ export const ReimbursementDetail = ({ reimbursement: initialItem, onClose, onEdi
           </Flex>
         </Stack>
       </Box>
-
+      
       {item.attachments?.length > 0 && (
         <Box bg="blue.50" p="16px" borderRadius="14px" border="1px dashed" borderColor="blue.200">
           <Flex align="center" gap={3} justify="space-between">
