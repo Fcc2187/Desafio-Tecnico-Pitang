@@ -5,8 +5,10 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "test": "jest -i",
-    "migrate": "npx prisma migrate dev",
-    "seed": "npx prisma db seed"
+    "db:migrate": "npx prisma migrate dev --skip-seed",
+    "db:deploy": "npx prisma migrate deploy",
+    "db:seed": "npx prisma db seed",
+    "db:reset": "npx prisma migrate reset --skip-seed"
   },
   "keywords": [],
   "author": "",

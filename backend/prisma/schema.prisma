@@ -51,6 +51,7 @@ model Category {
   id             String          @id @default(uuid())
   nome           String
   ativo          Boolean         @default(true)
+  deletadoEm     DateTime?
   limiteValor    Decimal?        @db.Decimal(10, 2)
   criadoEm       DateTime        @default(now())
   atualizadoEm   DateTime        @updatedAt

@@ -64,25 +64,26 @@ async function main() {
     },
   });
 
-  const catAlimentacao = await prisma.category.create({
-    data: { nome: 'Alimentação', ativo: true },
-  });
+  const categories = [
+    { nome: 'Alimentação', ativo: true, limiteValor: 500 },
+    { nome: 'Transporte', ativo: true, limiteValor: 300 },
+    { nome: 'Hospedagem', ativo: true, limiteValor: 2000 },
+    { nome: 'Equipamentos', ativo: true, limiteValor: 5000 },
+    { nome: 'Outros', ativo: true, limiteValor: null },
+    { nome: 'Despesa Médica', ativo: false, limiteValor: null },
+  ];
 
-  const catTransporte = await prisma.category.create({
-    data: { nome: 'Transporte', ativo: true },
-  });
+  for (const cat of categories) {
+    const existing = await prisma.category.findFirst({
+      where: { nome: cat.nome, deletadoEm: null }
+    });
 
-  const catHospedagem = await prisma.category.create({
-    data: { nome: 'Hospedagem', ativo: true },
-  });
-
-  const catEquipamentos = await prisma.category.create({
-    data: { nome: 'Equipamentos', ativo: true },
-  });
-
-  const catInativa = await prisma.category.create({
-    data: { nome: 'Categoria Inativa', ativo: false },
-  });
+    if (!existing) {
+      await prisma.category.create({
+        data: cat
+      });
+    }
+  }
 
   console.log('Database seeded successfully.');
 }

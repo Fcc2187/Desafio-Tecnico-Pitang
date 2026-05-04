@@ -25,6 +25,7 @@ CREATE TABLE "categories" (
     "id" TEXT NOT NULL,
     "nome" TEXT NOT NULL,
     "ativo" BOOLEAN NOT NULL DEFAULT true,
+    "deletadoEm" TIMESTAMP(3),
     "limiteValor" DECIMAL(10,2),
     "criadoEm" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "atualizadoEm" TIMESTAMP(3) NOT NULL,
