@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Box, Flex, Table, Text, Spinner, Center, Input, Stack, Heading, SimpleGrid } from '@chakra-ui/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as reimbursementService from '../../services/reimbursements.service';
-import { Plus, X, Tag, Edit3, ShieldCheck, Layers3, Search } from 'lucide-react';
+import { Plus, X, Tag, Edit3, ShieldCheck, Layers3, Search, Trash2 } from 'lucide-react';
 import { Field } from '../../components/ui/field';
 import { Switch } from '../../components/ui/switch';
 import { showErrorAlert, showSuccessAlert } from '../../components/ui/alerts';
@@ -41,6 +41,23 @@ export const CategoriesPage = () => {
       showErrorAlert('Erro ao salvar categoria', error.response?.data?.message || 'Tente novamente em instantes.');
     }
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => reimbursementService.deleteCategory(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      showSuccessAlert('Categoria excluída', 'A categoria foi removida com sucesso');
+    },
+    onError: (error: any) => {
+      showErrorAlert('Erro ao excluir', error.response?.data?.message || 'Não foi possível excluir a categoria.');
+    }
+  });
+
+  const handleDelete = (id: string) => {
+    if (window.confirm('Deseja realmente excluir esta categoria? Esta ação é irreversível.')) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   const handleEdit = (cat: any) => {
     setEditingCategory(cat);
@@ -229,6 +246,13 @@ export const CategoriesPage = () => {
                       bg="transparent" border="none"
                     >
                       <Edit3 size={16} />
+                    </Box>
+                    <Box 
+                      as="button" color="var(--s-muted)" cursor="pointer" 
+                      onClick={() => handleDelete(cat.id)} _hover={{ color: "red.500" }}
+                      bg="transparent" border="none"
+                    >
+                      <Trash2 size={16} />
                     </Box>
                     <Flex align="center" gap={2}>
                        <Text fontSize="xs" fontWeight="600" color="gray.400">Inativar</Text>

@@ -58,6 +58,8 @@ Painel dinâmico com:
 - **Limites por Categoria**: Valor máximo configurável por tipo de despesa.
 - **Anexo Obrigatório**: Travas para solicitações acima de **R$ 1.000,00**.
 - **Bloqueio de Datas Futuras**: Impedimento de lançamentos antecipados.
+- **Cotação de Moedas em Tempo Real**: Integração com API externa para exibição de valores equivalentes em USD e EUR no Dashboard.
+- **Soft Delete**: Implementação de exclusão lógica em categorias para manter integridade histórica.
 
 ---
 
@@ -84,8 +86,11 @@ docker-compose up -d
    ```
 3. Rode as migrações e o **Seed** (popula o banco com dados de teste):
    ```bash
-   npm run migrate
-   npm run seed
+   # Aplica as tabelas (sem dados)
+   npm run db:migrate
+   
+   # Popula o banco com usuários e categorias de teste
+   npm run db:seed
    ```
 4. Inicie: `npm run dev`.
 
@@ -93,6 +98,14 @@ docker-compose up -d
 1. Acesse `cd frontend` e instale: `npm install`.
 2. Inicie: `npm run dev`.
 3. Acesse `http://localhost:5173`.
+
+### **4. Visualização de Dados (Interface Gráfica)**
+Para visualizar e gerenciar os dados do banco de forma visual (sem SQL), você pode usar o **Prisma Studio**:
+```bash
+cd backend
+npx prisma studio
+```
+Acesse em: `http://localhost:5555`.
 
 ---
 

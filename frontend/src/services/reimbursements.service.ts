@@ -110,3 +110,8 @@ export const updateCategory = async (id: string, data: { nome?: string, ativo?: 
   return response.data;
 };
 
+export const deleteCategory = async (id: string) => {
+  const response = await api.delete(`/categories/${id}`);
+  return response.data;
+};
+
