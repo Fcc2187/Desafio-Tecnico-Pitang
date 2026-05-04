@@ -172,7 +172,7 @@ export const ReimbursementDetail = ({ reimbursement: initialItem, onClose, onEdi
                       </Box>
                     )}
                     <Box overflow="hidden">
-                      <Text fontSize="13px" fontWeight="700" color="#101828" isTruncated>{att.nomeArquivo}</Text>
+                      <Text fontSize="13px" fontWeight="700" color="#101828" truncate>{att.nomeArquivo}</Text>
                       <Text fontSize="11px" color="var(--s-muted)">Clique para abrir o arquivo original</Text>
                     </Box>
                   </Flex>

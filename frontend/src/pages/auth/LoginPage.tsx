@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Box, Flex, Heading, Input, Stack, Text, Link as ChakraLink } from '@chakra-ui/react';
+import { Box, Flex, Heading, Input, Stack, Text } from '@chakra-ui/react';
 import { Field } from '../../components/ui/field';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

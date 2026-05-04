@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Box, Flex, Heading, Text, Table, Badge, Spinner, Center } from '@chakra-ui/react';
 import { useQuery } from '@tanstack/react-query';
 import * as reimbursementService from '../../services/reimbursements.service';
-import { Plus, X, Receipt} from 'lucide-react';
+import * as userService from '../../services/users.service';
+import { Plus, X, Receipt } from 'lucide-react';
 import { ReimbursementForm } from './ReimbursementForm';
 import { ReimbursementDetail } from './ReimbursementDetail';
 
@@ -40,6 +41,11 @@ export const ReimbursementsPage = () => {
   const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: reimbursementService.listCategories,
+  });
+
+  const { data: users } = useQuery({
+    queryKey: ['users'],
+    queryFn: userService.list,
   });
 
   const reimbursements = paginatedData?.data || [];
@@ -159,6 +165,22 @@ export const ReimbursementsPage = () => {
             <option value="">Status</option>
             {Object.keys(statusMap).map(status => (
               <option key={status} value={status}>{statusMap[status].label}</option>
+            ))}
+          </select>
+          <select
+            value={colaboradorFilter}
+            onChange={(e) => { setColaboradorFilter(e.target.value); setPage(1); }}
+            style={{
+              padding: '12px 14px', borderRadius: '12px',
+              border: '1.5px solid #e5e7eb', background: 'white',
+              fontSize: '14px', outline: 'none', color: '#475467',
+              fontWeight: '500', cursor: 'pointer', boxShadow: 'var(--shadow-sm)',
+              minWidth: '180px', flex: '1.5 1 180px'
+            }}
+          >
+            <option value="">Colaboradores</option>
+            {users?.filter((u: any) => u.perfil === 'COLABORADOR').map((user: any) => (
+              <option key={user.id} value={user.nome}>{user.nome}</option>
             ))}
           </select>
         </Flex>
