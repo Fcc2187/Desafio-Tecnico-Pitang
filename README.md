@@ -78,7 +78,8 @@ docker-compose up -d
 2. Configure o `.env` (use o `env.example` como base):
    ```env
    DATABASE_URL="postgresql://pitang_user:pitang_password@127.0.0.1:5433/pitang_reimbursements?schema=public"
-   JWT_SECRET="gerar_via_node"
+   JWT_SECRET="gerar_via_node" gerar com isso: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
    PORT=3000
    ```
 3. Rode as migrações e o **Seed** (popula o banco com dados de teste):
