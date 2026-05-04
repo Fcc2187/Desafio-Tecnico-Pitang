@@ -145,4 +145,37 @@ describe('Reimbursements Module Integration Tests', () => {
     
     expect(hasAttachmentHistory).toBe(true);
   });
+
+  it('should allow updating a draft above the attachment threshold when an attachment already exists', async () => {
+    const createResponse = await request(app)
+      .post('/reimbursements')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        categoriaId: categoryId,
+        descricao: 'Viagem com comprovante',
+        valor: 500,
+        dataDespesa: new Date().toISOString()
+      });
+
+    const reimbursementId = createResponse.body.id;
+
+    await prisma.attachment.create({
+      data: {
+        solicitacaoId: reimbursementId,
+        nomeArquivo: 'comprovante.pdf',
+        urlArquivo: 'https://storage.com/file.pdf',
+        tipoArquivo: 'application/pdf',
+      },
+    });
+
+    const updateResponse = await request(app)
+      .put(`/reimbursements/${reimbursementId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        valor: 1500,
+      });
+
+    expect(updateResponse.status).toBe(200);
+    expect(Number(updateResponse.body.valor)).toBe(1500);
+  });
 });

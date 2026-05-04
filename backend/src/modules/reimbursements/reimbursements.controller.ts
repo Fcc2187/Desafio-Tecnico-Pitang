@@ -141,7 +141,10 @@ export const updateReimbursement = async (req: Request, res: Response) => {
   const userId = req.user!.id;
   const { categoriaId, descricao, valor, dataDespesa } = req.body;
 
-  const item = await prisma.reimbursement.findUnique({ where: { id } });
+  const item = await prisma.reimbursement.findUnique({
+    where: { id },
+    include: { attachments: true },
+  });
 
   if (!item) throw new AppError('Solicitação não encontrada', 404);
   if (item.solicitanteId !== userId) throw new AppError('Ação permitida apenas para o dono', 403);
@@ -149,6 +152,12 @@ export const updateReimbursement = async (req: Request, res: Response) => {
 
   const finalCategoryId = categoriaId || item.categoriaId;
   const finalValor = valor || item.valor;
+  const incomingAttachments = req.body.attachments || [];
+  const hasAttachments = item.attachments.length > 0 || incomingAttachments.length > 0;
+
+  if (Number(finalValor) > 1000 && !hasAttachments) {
+    throw new AppError('Comprovante obrigatório para valores acima de R$ 1.000,00', 400);
+  }
 
   const category = await prisma.category.findUnique({ where: { id: finalCategoryId } });
   if (category?.limiteValor && Number(finalValor) > Number(category.limiteValor)) {

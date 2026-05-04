@@ -16,7 +16,6 @@ import * as reimbursementService from '../../services/reimbursements.service';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FileText, Upload } from 'lucide-react';
 import { useState } from 'react';
-import { showErrorAlert, showSuccessAlert } from '../../components/ui/alerts';
 
 const reimbursementSchema = z.object({
   descricao: z.string().min(5, 'Descrição muito curta'),
@@ -91,14 +90,10 @@ export const ReimbursementForm = ({ onClose, initialData }: ReimbursementFormPro
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reimbursements'] });
       if (isEditing) queryClient.invalidateQueries({ queryKey: ['reimbursement', initialData.id] });
-      showSuccessAlert(
-        isEditing ? 'Solicitação atualizada' : 'Solicitação criada',
-        isEditing ? 'As alterações foram salvas com sucesso.' : 'O rascunho foi salvo com sucesso.'
-      );
       onClose();
     },
     onError: (error: any) => {
-      showErrorAlert('Erro ao salvar solicitação', error.message || error.response?.data?.message || 'Tente novamente em instantes.');
+      alert(error.message || error.response?.data?.message || 'Erro ao salvar');
     }
   });
 
