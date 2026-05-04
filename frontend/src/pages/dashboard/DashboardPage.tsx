@@ -12,17 +12,27 @@ interface StatCardProps {
   accentColor: string;
 }
 
+const actionColorMap: Record<string, string> = {
+  CREATED: 'gray',
+  UPDATED: 'blue',
+  SUBMITTED: 'blue',
+  APPROVED: 'green',
+  REJECTED: 'red',
+  PAID: 'teal',
+  CANCELED: 'orange',
+};
+
 const StatCard = ({ label, value, helpText, icon: Icon, accentColor }: StatCardProps) => (
   <Box
-    bg="var(--s-card)"
+    bg="rgba(255,255,255,0.92)"
     p="24px"
-    borderRadius="14px"
+    borderRadius="18px"
     border="1px solid var(--s-border)"
     position="relative"
     overflow="hidden"
-    style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
-    transition="all 0.2s"
-    _hover={{ transform: 'translateY(-2px)', boxShadow: '0 8px 24px rgba(0,0,0,0.09)' }}
+    boxShadow="var(--shadow-md)"
+    transition="transform 0.18s ease, box-shadow 0.18s ease"
+    _hover={{ transform: 'translateY(-3px)', boxShadow: 'var(--shadow-lg)' }}
   >
     <Box
       position="absolute" top={0} left={0}
@@ -31,10 +41,10 @@ const StatCard = ({ label, value, helpText, icon: Icon, accentColor }: StatCardP
     />
     <Flex justify="space-between" align="flex-start" mb="16px">
       <Box>
-        <Text fontSize="12px" fontWeight="600" color="var(--s-muted)" letterSpacing="0.04em" textTransform="uppercase" mb="6px">
+        <Text fontSize="11px" fontWeight="700" color="var(--s-muted)" letterSpacing="0.09em" textTransform="uppercase" mb="6px">
           {label}
         </Text>
-        <Text fontSize="28px" fontWeight="800" letterSpacing="-0.03em" color="var(--s-text)" lineHeight={1}>
+        <Text fontSize="30px" fontWeight="900" letterSpacing="-0.04em" color="var(--s-text)" lineHeight={1}>
           {value}
         </Text>
       </Box>
@@ -46,7 +56,7 @@ const StatCard = ({ label, value, helpText, icon: Icon, accentColor }: StatCardP
         <Icon size={20} color={accentColor} />
       </Box>
     </Flex>
-    <Text fontSize="12px" color="var(--s-muted)">{helpText}</Text>
+      <Text fontSize="12px" color="var(--s-muted)">{helpText}</Text>
   </Box>
 );
 
@@ -74,46 +84,44 @@ export const DashboardPage = () => {
 
   return (
     <Box>
-      {/* Page Header */}
       <Box
-        mb="32px"
-        pb="24px"
-        borderBottom="1px solid var(--s-border)"
+        mb="28px"
+        p={{ base: '20px', md: '24px', lg: '28px' }}
+        borderRadius="24px"
+        bg="linear-gradient(135deg, rgba(16,21,35,0.98) 0%, rgba(26,31,46,0.96) 56%, rgba(200,16,46,0.92) 140%)"
+        color="white"
+        border="1px solid rgba(255,255,255,0.06)"
+        boxShadow="var(--shadow-lg)"
+        position="relative"
+        overflow="hidden"
       >
-        <Flex justify="space-between" align="flex-end">
-          <Box>
-            <Text fontSize="12px" fontWeight="600" color="var(--p-accent)" letterSpacing="0.06em" textTransform="uppercase" mb="6px">
+        <Box position="absolute" inset={0} opacity={0.45} style={{ backgroundImage: 'radial-gradient(circle at top right, rgba(255,255,255,0.14), transparent 26%), radial-gradient(circle at bottom left, rgba(255,255,255,0.08), transparent 24%)' }} />
+        <Flex justify="space-between" align={{ base: 'flex-start', lg: 'flex-end' }} gap="18px" flexWrap="wrap" position="relative" zIndex={1}>
+          <Box maxW="760px">
+            <Text fontSize="11px" fontWeight="700" color="#f9b3bf" letterSpacing="0.1em" textTransform="uppercase" mb="8px">
               Dashboard
             </Text>
             <Heading
-              fontSize="26px"
-              fontWeight="800"
-              letterSpacing="-0.03em"
-              color="var(--s-text)"
+              fontSize={{ base: '28px', md: '34px', xl: '40px' }}
+              fontWeight="900"
+              letterSpacing="-0.05em"
+              lineHeight="1.02"
+              color="#ffffff"
             >
-              Olá, {user?.nome?.split(' ')[0]} 👋
+              Olá, {user?.nome?.split(' ')[0]}.
+              <Text as="span" display="block" color="#fff1f3">
+                Acompanhe seus reembolsos pelo nosso sistema.
+              </Text>
             </Heading>
-            <Text color="var(--s-muted)" fontSize="14px" mt="4px">
-              Acompanhe o status das suas solicitações de reembolso.
+            <Text color="rgba(255,255,255,0.75)" fontSize="14px" mt="10px" maxW="680px">
+              Uma visão executiva com valores financeiros, atividades recentes e o fluxo operacional em andamento.
             </Text>
-          </Box>
-          <Box
-            px="14px" py="8px"
-            borderRadius="99px"
-            bg="var(--s-card)"
-            border="1px solid var(--s-border)"
-            display="flex"
-            alignItems="center"
-            gap="6px"
-          >
-            <Box w="7px" h="7px" borderRadius="full" bg="var(--p-green)" />
-            <Text fontSize="12px" color="var(--s-muted)">Sistema Online</Text>
           </Box>
         </Flex>
       </Box>
 
       {/* Stats Grid */}
-      <SimpleGrid columns={{ base: 1, md: 2, xl: 4 }} gap="16px" mb="28px">
+      <SimpleGrid columns={{ base: 1, md: 2, xl: 4 }} gap="18px" mb="28px">
         <StatCard
           label="Pendentes"
           value={String(stats.pendentes)}
@@ -146,30 +154,37 @@ export const DashboardPage = () => {
 
       {/* Activity Feed */}
       <Box
-        bg="var(--s-card)"
-        borderRadius="14px"
+        bg="rgba(255,255,255,0.92)"
+        borderRadius="18px"
         border="1px solid var(--s-border)"
         overflow="hidden"
-        style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+        boxShadow="var(--shadow-md)"
       >
-        <Box px="24px" py="18px" borderBottom="1px solid var(--s-border)">
-          <Text fontWeight="700" fontSize="15px" color="var(--s-text)">Atividades Recentes</Text>
-        </Box>
+        <Flex px="24px" py="18px" borderBottom="1px solid var(--s-border)" justify="space-between" align="center" gap="12px" flexWrap="wrap">
+          <Box>
+            <Text fontWeight="800" fontSize="15px" color="var(--s-text)">Atividades Recentes</Text>
+            <Text fontSize="12px" color="var(--s-muted)" mt="2px">Últimas movimentações do sistema</Text>
+          </Box>
+          <Badge variant="subtle" colorPalette="red" borderRadius="999px" px={3} py={1} fontSize="10px" fontWeight="700">
+            Atualização contínua
+          </Badge>
+        </Flex>
         
         {recentActivities.length > 0 ? (
-          <Stack gap={0}>
+          <Stack gap={0} p="8px">
             {recentActivities.map((activity: any) => (
               <Box 
                 key={activity.id} 
-                px="24px" py="16px" 
+                px="16px" py="14px" 
+                borderRadius="14px"
                 borderBottom="1px solid var(--s-border)"
                 _last={{ borderBottom: 'none' }}
-                _hover={{ bg: 'gray.50' }}
-                transition="background 0.2s"
+                _hover={{ bg: 'rgba(200,16,46,0.04)' }}
+                transition="background 0.18s ease"
               >
                 <Flex justify="space-between" align="center">
                   <Flex align="center" gap={3}>
-                    <Box p={2} bg="gray.100" borderRadius="8px">
+                    <Box p={2} bg="rgba(15,23,42,0.05)" borderRadius="10px">
                       <History size={16} color="var(--s-muted)" />
                     </Box>
                     <Box>
@@ -181,7 +196,7 @@ export const DashboardPage = () => {
                       </Text>
                     </Box>
                   </Flex>
-                  <Badge variant="subtle" colorPalette="blue" fontSize="10px">
+                  <Badge variant="solid" colorPalette={actionColorMap[activity.acao] || 'blue'} borderRadius="999px" px={2.5} py={1} fontSize="10px" fontWeight="700">
                     {activity.acao}
                   </Badge>
                 </Flex>
@@ -189,16 +204,10 @@ export const DashboardPage = () => {
             ))}
           </Stack>
         ) : (
-          <Flex
-            direction="column"
-            align="center"
-            justify="center"
-            py="60px"
-            px="24px"
-          >
+          <Flex direction="column" align="center" justify="center" py="60px" px="24px">
             <Box
               w="52px" h="52px" borderRadius="14px"
-              bg="var(--s-bg)"
+              bg="rgba(15,23,42,0.04)"
               border="1px solid var(--s-border)"
               display="flex" alignItems="center" justifyContent="center"
               mb="14px"

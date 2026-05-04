@@ -1,10 +1,11 @@
-import { Box, Stack, Heading, Text, Flex, Badge, Separator, Textarea, Spinner, Center } from '@chakra-ui/react';
+import { Box, Stack, Heading, Text, Flex, Badge, Separator, Textarea, Spinner, Center, SimpleGrid } from '@chakra-ui/react';
 import { Button } from '../../components/ui/button';
 import { useAuth } from '../../contexts/AuthContext';
 import * as reimbursementService from '../../services/reimbursements.service';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Clock, CheckCircle, XCircle, DollarSign, Send, RotateCcw, User, FileText } from 'lucide-react';
+import { showErrorAlert, showWarningAlert } from '../../components/ui/alerts';
 
 interface ReimbursementDetailProps {
   reimbursement: any;
@@ -49,7 +50,7 @@ export const ReimbursementDetail = ({ reimbursement: initialItem, onClose, onEdi
       onClose();
     },
     onError: (error: any) => {
-      alert(error.response?.data?.message || 'Erro ao processar ação');
+      showErrorAlert('Erro ao processar ação', error.response?.data?.message || 'Tente novamente em instantes.');
     }
   });
 
@@ -63,7 +64,7 @@ export const ReimbursementDetail = ({ reimbursement: initialItem, onClose, onEdi
         return;
       }
       if (!justificativa.trim()) {
-        alert('A justificativa é obrigatória para rejeitar.');
+        showWarningAlert('Justificativa obrigatória', 'Informe o motivo antes de rejeitar a solicitação.');
         return;
       }
     }
@@ -76,59 +77,75 @@ export const ReimbursementDetail = ({ reimbursement: initialItem, onClose, onEdi
   const canCancel = (user?.perfil === 'COLABORADOR' && (item.status === 'RASCUNHO' || item.status === 'ENVIADO')) || user?.perfil === 'ADMIN';
 
   return (
-    <Stack gap={6}>
-      <Box>
-        <Flex justify="space-between" align="flex-start">
+    <Stack gap={5}>
+      <Box
+        p={{ base: '16px', md: '18px' }}
+        borderRadius="20px"
+        bg="linear-gradient(135deg, rgba(16,21,35,0.98) 0%, rgba(26,31,46,0.96) 56%, rgba(200,16,46,0.92) 140%)"
+        color="white"
+        border="1px solid rgba(255,255,255,0.06)"
+        boxShadow="var(--shadow-lg)"
+        position="relative"
+        overflow="hidden"
+      >
+        <Box position="absolute" inset={0} opacity={0.45} style={{ backgroundImage: 'radial-gradient(circle at top right, rgba(255,255,255,0.14), transparent 26%), radial-gradient(circle at bottom left, rgba(255,255,255,0.08), transparent 24%)' }} />
+        <Flex justify="space-between" align="flex-start" gap="12px" position="relative" zIndex={1} flexDirection={{ base: 'column', sm: 'row' }}>
           <Box>
-            <Heading fontSize="20px" fontWeight="800" color="#111">{item.descricao}</Heading>
-            <Text color="var(--s-muted)" fontSize="13px" mt="1">ID: {item.id.substring(0, 8).toUpperCase()}</Text>
+            <Text fontSize="11px" fontWeight="700" color="#f9b3bf" letterSpacing="0.1em" textTransform="uppercase" mb="8px">
+              Detalhes da solicitação
+            </Text>
+            <Heading fontSize={{ base: '18px', md: '20px' }} fontWeight="900" letterSpacing="-0.04em" lineHeight="1.05" color="#ffffff">
+              {item.descricao}
+            </Heading>
+            <Text color="rgba(255,255,255,0.72)" fontSize="12px" mt="3px">ID: {item.id.substring(0, 8).toUpperCase()}</Text>
           </Box>
-          <Badge colorPalette={item.status === 'APROVADO' ? 'green' : 'blue'} variant="solid" px={3} py={1} borderRadius="lg">
+          <Badge colorPalette={item.status === 'APROVADO' ? 'green' : 'blue'} variant="solid" px={3} py={1} borderRadius="999px" fontSize="10px" fontWeight="700">
             {item.status}
           </Badge>
         </Flex>
       </Box>
 
-      <Separator />
-
-      <Box bg="#f8f9fc" p="20px" borderRadius="14px" border="1px solid var(--s-border)">
-        <Text fontWeight="800" fontSize="12px" color="var(--s-muted)" textTransform="uppercase" mb="16px" letterSpacing="0.05em">Detalhes da Solicitação</Text>
-        <Stack gap="12px">
-          <Flex justify="space-between">
-            <Text color="#475467" fontSize="14px">Categoria</Text>
-            <Text fontWeight="700" fontSize="14px" color="#101828">{item.categoria.nome}</Text>
-          </Flex>
-          <Flex justify="space-between">
-            <Text color="#475467" fontSize="14px">Valor Total</Text>
-            <Text fontWeight="800" fontSize="16px" color="var(--p-accent)">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.valor)}
+      <SimpleGrid columns={{ base: 1, md: 2 }} gap={3}>
+        {[
+          { label: 'Categoria', value: item.categoria.nome },
+          { label: 'Solicitante', value: item.solicitante.nome, icon: User },
+          { label: 'Valor Total', value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.valor) },
+          { label: 'Data da Despesa', value: new Date(item.dataDespesa).toLocaleDateString('pt-BR') },
+        ].map((field) => (
+          <Box key={field.label} p="16px" borderRadius="16px" bg="rgba(248,250,252,0.92)" border="1px solid var(--s-border)">
+            <Text fontSize="10px" fontWeight="700" color="var(--s-muted)" letterSpacing="0.08em" textTransform="uppercase" mb="6px">
+              {field.label}
             </Text>
-          </Flex>
-          <Flex justify="space-between">
-            <Text color="#475467" fontSize="14px">Data da Despesa</Text>
-            <Text fontWeight="700" fontSize="14px" color="#101828">{new Date(item.dataDespesa).toLocaleDateString('pt-BR')}</Text>
-          </Flex>
-          <Flex justify="space-between">
-            <Text color="#475467" fontSize="14px">Solicitante</Text>
             <Flex align="center" gap={2}>
-              <Box w="24px" h="24px" borderRadius="full" bg="gray.200" display="flex" alignItems="center" justifyContent="center">
-                <User size={12} color="#667085" />
-              </Box>
-              <Text fontWeight="700" fontSize="14px" color="#101828">{item.solicitante.nome}</Text>
+              {'icon' in field && field.icon && (
+                <Box w="24px" h="24px" borderRadius="full" bg="rgba(15,23,42,0.05)" display="grid" placeItems="center">
+                  <field.icon size={12} color="#667085" />
+                </Box>
+              )}
+              <Text fontWeight={field.label === 'Valor Total' ? '900' : '700'} fontSize={field.label === 'Valor Total' ? '16px' : '14px'} color={field.label === 'Valor Total' ? 'var(--p-accent)' : '#101828'}>
+                {field.value}
+              </Text>
             </Flex>
-          </Flex>
-        </Stack>
+          </Box>
+        ))}
+      </SimpleGrid>
+
+      <Box bg="rgba(248,250,252,0.92)" p="18px" borderRadius="16px" border="1px solid var(--s-border)">
+        <Text fontWeight="800" fontSize="11px" color="var(--s-muted)" textTransform="uppercase" mb="14px" letterSpacing="0.08em">Resumo</Text>
+        <Text fontSize="14px" color="#475467" lineHeight="1.65">
+          Solicitação atualmente em status <strong>{item.status}</strong>, com histórico e anexos apresentados abaixo em formato de auditoria.
+        </Text>
       </Box>
       
       {item.attachments?.length > 0 && (
         <Box>
-          <Text fontWeight="800" fontSize="12px" color="var(--s-muted)" textTransform="uppercase" mb="12px" letterSpacing="0.05em">Anexos ({item.attachments.length})</Text>
+          <Text fontWeight="800" fontSize="11px" color="var(--s-muted)" textTransform="uppercase" mb="12px" letterSpacing="0.08em">Anexos ({item.attachments.length})</Text>
           <Stack gap={3}>
             {item.attachments.map((att: any) => (
               <Box 
                 key={att.id}
-                bg="white" p="12px" borderRadius="12px" border="1px solid" borderColor="var(--s-border)"
-                transition="all 0.2s" _hover={{ borderColor: "var(--p-accent)", bg: "blue.50" }}
+                bg="rgba(255,255,255,0.92)" p="12px" borderRadius="14px" border="1px solid" borderColor="var(--s-border)"
+                transition="all 0.2s" _hover={{ borderColor: "var(--p-accent)", bg: "rgba(200,16,46,0.03)" }}
               >
                 <Flex align="center" gap={3} justify="space-between">
                   <Flex align="center" gap={3}>
@@ -140,12 +157,12 @@ export const ReimbursementDetail = ({ reimbursement: initialItem, onClose, onEdi
                         <img src={att.urlArquivo} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </Box>
                     ) : (
-                      <Box p={3} bg="blue.100" borderRadius="8px" flexShrink={0}>
+                      <Box p={3} bg="rgba(37,99,235,0.1)" borderRadius="10px" flexShrink={0}>
                         <FileText size={18} color="#2b6cb0" />
                       </Box>
                     )}
                     <Box overflow="hidden">
-                      <Text fontSize="13px" fontWeight="700" color="#101828" isTruncated>{att.nomeArquivo}</Text>
+                      <Text fontSize="13px" fontWeight="700" color="#101828" truncate>{att.nomeArquivo}</Text>
                       <Text fontSize="11px" color="var(--s-muted)">Clique para abrir o arquivo original</Text>
                     </Box>
                   </Flex>
@@ -170,7 +187,7 @@ export const ReimbursementDetail = ({ reimbursement: initialItem, onClose, onEdi
       )}
 
       <Box>
-        <Text fontWeight="800" fontSize="12px" color="var(--s-muted)" textTransform="uppercase" mb="20px" letterSpacing="0.05em">Histórico de Auditoria</Text>
+        <Text fontWeight="800" fontSize="11px" color="var(--s-muted)" textTransform="uppercase" mb="20px" letterSpacing="0.08em">Histórico de Auditoria</Text>
         <Stack gap="0" position="relative">
           {item.history?.map((event: any, idx: number) => {
             const config = actionIcons[event.acao] || { icon: Clock, color: 'gray.400', label: event.acao };
@@ -208,39 +225,39 @@ export const ReimbursementDetail = ({ reimbursement: initialItem, onClose, onEdi
               onChange={(e) => setJustificativa(e.target.value)}
               placeholder="Descreva o motivo detalhadamente..."
               size="md"
-              style={{ borderRadius: '10px', border: '1.5px solid var(--s-border)' }}
+              style={{ borderRadius: '14px', border: '1.5px solid var(--s-border)', boxShadow: 'var(--shadow-sm)' }}
             />
           </Box>
         )}
 
-        <Flex gap={3} flexWrap="wrap">
+        <Flex gap={3} flexWrap="wrap" direction={{ base: 'column', sm: 'row' }}>
           {canSubmit && (
-            <Button variant="outline" color="blue.600" flex={1} onClick={() => onEdit(item)}>
+            <Button variant="outline" color="blue.600" flex={1} width={{ base: '100%', sm: 'auto' }} onClick={() => onEdit(item)}>
               Editar Rascunho
             </Button>
           )}
           {canSubmit && (
-            <Button bg="blue.600" color="white" flex={1} onClick={() => handleAction('submit')} loading={mutation.isPending}>
+            <Button bg="blue.600" color="white" flex={1} width={{ base: '100%', sm: 'auto' }} onClick={() => handleAction('submit')} loading={mutation.isPending}>
               <Send size={16} /> Enviar para Aprovação
             </Button>
           )}
           {canApprove && !showRejectInput && (
-            <Button bg="#10a37f" color="white" flex={1} onClick={() => handleAction('approve')} loading={mutation.isPending}>
+            <Button bg="#10a37f" color="white" flex={1} width={{ base: '100%', sm: 'auto' }} onClick={() => handleAction('approve')} loading={mutation.isPending}>
               <CheckCircle size={16} /> Aprovar
             </Button>
           )}
           {(canApprove || user?.perfil === 'ADMIN') && (
-            <Button bg="var(--p-accent)" color="white" flex={showRejectInput ? 1 : 'none'} onClick={() => handleAction('reject')} loading={mutation.isPending}>
+            <Button bg="var(--p-accent)" color="white" flex={showRejectInput ? 1 : 'none'} width={{ base: '100%', sm: 'auto' }} onClick={() => handleAction('reject')} loading={mutation.isPending}>
               <XCircle size={16} /> {showRejectInput ? 'Confirmar Rejeição' : 'Rejeitar'}
             </Button>
           )}
           {canPay && (
-            <Button bg="teal.600" color="white" flex={1} onClick={() => handleAction('pay')} loading={mutation.isPending}>
+            <Button bg="teal.600" color="white" flex={1} width={{ base: '100%', sm: 'auto' }} onClick={() => handleAction('pay')} loading={mutation.isPending}>
               <DollarSign size={16} /> Confirmar Pagamento
             </Button>
           )}
           {canCancel && !showRejectInput && (
-            <Button variant="outline" color="red.600" border="1px solid red.200" flex={1} onClick={() => handleAction('cancel')} loading={mutation.isPending}>
+            <Button variant="outline" color="red.600" border="1px solid red.200" flex={1} width={{ base: '100%', sm: 'auto' }} onClick={() => handleAction('cancel')} loading={mutation.isPending}>
               Cancelar
             </Button>
           )}

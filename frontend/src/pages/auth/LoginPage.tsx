@@ -8,6 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import * as authService from '../../services/auth.service';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, Receipt } from 'lucide-react';
+import { showErrorAlert, showSuccessAlert } from '../../components/ui/alerts';
 
 
 const loginSchema = z.object({
@@ -33,27 +34,31 @@ export const LoginPage = () => {
     try {
       const response = await authService.login(data.email, data.senha);
       login(response.token, response.user);
+      await showSuccessAlert('Login realizado com sucesso', 'Bem-vindo de volta ao painel.');
       navigate('/');
     } catch (error: any) {
-      setErrorMsg(error.response?.data?.message || 'Credenciais inválidas. Tente novamente.');
+      const message = error.response?.data?.message || 'Credenciais inválidas. Tente novamente.';
+      setErrorMsg(message);
+      await showErrorAlert('Falha no login', message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Flex minH="100vh">
+    <Flex minH="100vh" bg="var(--app-bg)">
       <Flex
         display={{ base: 'none', lg: 'flex' }}
         flexDir="column"
         justify="space-between"
-        w="480px"
+        w="520px"
         flexShrink={0}
-        p="48px"
+        p="56px"
         position="relative"
         overflow="hidden"
         style={{
-          background: 'linear-gradient(155deg, #1a1f2e 0%, #0d0d0d 60%, #1a0a10 100%)',
+          background: 'linear-gradient(155deg, #101523 0%, #0d0d0d 56%, #1a0a10 100%)',
+          boxShadow: '20px 0 50px rgba(15, 23, 42, 0.18)',
         }}
       >
         <Box
@@ -114,15 +119,19 @@ export const LoginPage = () => {
             Gerencie solicitações, acompanhe aprovações e processe pagamentos em uma plataforma segura e eficiente.
           </Text>
 
-          {/* Feature badges */}
-          <Stack gap="10px" mt="32px">
-            {['Aprovação por fluxo de perfis', 'Histórico de auditoria completo', 'Gestão por categorias'].map(f => (
-              <Flex key={f} align="center" gap="10px">
-                <Box w="6px" h="6px" borderRadius="full" bg="var(--p-accent)" flexShrink={0} />
-                <Text color="var(--p-text-muted)" fontSize="13px">{f}</Text>
-              </Flex>
-            ))}
-          </Stack>
+          <Box mt="32px" p="18px" borderRadius="18px" bg="rgba(255,255,255,0.04)" border="1px solid rgba(255,255,255,0.08)">
+            <Text fontSize="11px" fontWeight="700" letterSpacing="0.08em" textTransform="uppercase" color="var(--p-text-muted)" mb="12px">
+              O que você encontra aqui
+            </Text>
+            <Stack gap="10px">
+              {['Aprovação por fluxo de perfis', 'Histórico de auditoria completo', 'Gestão por categorias'].map(f => (
+                <Flex key={f} align="center" gap="10px">
+                  <Box w="7px" h="7px" borderRadius="full" bg="var(--p-accent)" flexShrink={0} boxShadow="0 0 0 4px rgba(200,16,46,0.12)" />
+                  <Text color="var(--p-text-muted)" fontSize="13px">{f}</Text>
+                </Flex>
+              ))}
+            </Stack>
+          </Box>
         </Box>
 
         <Text color="var(--p-text-muted)" fontSize="12px" position="relative" zIndex={1}>
@@ -134,14 +143,22 @@ export const LoginPage = () => {
         flex={1}
         align="center"
         justify="center"
-        bg="var(--s-bg)"
-        p="32px"
+        px={{ base: '18px', md: '28px' }}
+        py="28px"
       >
-        <Box w="100%" maxW="400px">
-          <Box mb="36px">
+        <Box w="100%" maxW="460px">
+          <Box
+            mb="28px"
+            p={{ base: '22px', md: '28px' }}
+            borderRadius="24px"
+            bg="rgba(255,255,255,0.92)"
+            border="1px solid var(--s-border)"
+            boxShadow="var(--shadow-lg)"
+            backdropFilter="blur(14px)"
+          >
             <Heading
-              fontSize="26px"
-              fontWeight="800"
+              fontSize="28px"
+              fontWeight="900"
               letterSpacing="-0.03em"
               color="var(--s-text)"
               mb="6px"
@@ -154,7 +171,7 @@ export const LoginPage = () => {
           </Box>
 
           <form onSubmit={handleSubmit(onSubmit)}>
-            <Stack gap="18px">
+            <Stack gap="18px" p={{ base: '0', md: '2px' }}>
               <Field label="E-mail" invalid={!!errors.email} errorText={errors.email?.message}>
                 <Input
                   type="email"
@@ -164,9 +181,10 @@ export const LoginPage = () => {
                   style={{
                     background: 'white',
                     border: '1.5px solid var(--s-border)',
-                    borderRadius: '10px',
+                    borderRadius: '14px',
                     fontSize: '14px',
-                    padding: '12px 14px',
+                    padding: '14px 15px',
+                    boxShadow: 'var(--shadow-sm)',
                   }}
                 />
               </Field>
@@ -180,9 +198,10 @@ export const LoginPage = () => {
                   style={{
                     background: 'white',
                     border: '1.5px solid var(--s-border)',
-                    borderRadius: '10px',
+                    borderRadius: '14px',
                     fontSize: '14px',
-                    padding: '12px 14px',
+                    padding: '14px 15px',
+                    boxShadow: 'var(--shadow-sm)',
                   }}
                 />
               </Field>
@@ -191,7 +210,7 @@ export const LoginPage = () => {
                 <Box
                   bg="rgba(200,16,46,0.08)"
                   border="1px solid rgba(200,16,46,0.25)"
-                  borderRadius="10px"
+                  borderRadius="14px"
                   p="12px 14px"
                 >
                   <Text color="var(--p-accent)" fontSize="13px">{errorMsg}</Text>
@@ -203,11 +222,11 @@ export const LoginPage = () => {
                 disabled={loading}
                 style={{
                   width: '100%',
-                  padding: '13px 20px',
-                  borderRadius: '10px',
+                  padding: '14px 20px',
+                  borderRadius: '14px',
                   background: loading ? 'var(--p-accent-dark)' : 'var(--p-accent)',
                   color: 'white',
-                  fontWeight: '600',
+                  fontWeight: '700',
                   fontSize: '14px',
                   cursor: loading ? 'not-allowed' : 'pointer',
                   border: 'none',
@@ -217,7 +236,7 @@ export const LoginPage = () => {
                   gap: '8px',
                   transition: 'all 0.2s',
                   marginTop: '8px',
-                  boxShadow: '0 8px 24px var(--p-accent-glow)',
+                  boxShadow: '0 10px 28px var(--p-accent-glow)',
                   opacity: loading ? 0.7 : 1,
                   fontFamily: 'inherit',
                 }}
