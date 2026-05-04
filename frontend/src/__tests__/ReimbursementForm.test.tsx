@@ -37,7 +37,7 @@ describe('ReimbursementForm', () => {
     expect(errorMsg).toBeInTheDocument();
   });
 
-  it('deve exigir anexo para valores acima de R$ 1.000,00', async () => {
+  it('deve permitir salvar rascunho sem anexo para valores acima de R$ 1.000,00', async () => {
     const user = userEvent.setup();
     render(<ReimbursementForm onClose={() => {}} />);
     
@@ -46,15 +46,15 @@ describe('ReimbursementForm', () => {
     const select = screen.getByRole('combobox');
     fireEvent.change(select, { target: { value: 'cat-1' } });
 
-    fireEvent.change(screen.getByPlaceholderText('Ex: Almoço com cliente'), { target: { value: 'Notebook Novo da Apple' } });
+    fireEvent.change(screen.getByPlaceholderText('Ex: Almoço com cliente'), { target: { value: 'Notebook Caro' } });
     fireEvent.change(screen.getByPlaceholderText('0,00'), { target: { value: '5000' } });
     
     fireEvent.change(screen.getByLabelText(/Data da Despesa/i), { target: { value: '2023-10-10' } });
 
     await user.click(screen.getByRole('button', { name: /Salvar Rascunho/i }));
 
-    const errorMsg = await screen.findByText(/Comprovante obrigatório para valores acima de R\$ 1.000,00/i);
-    expect(errorMsg).toBeInTheDocument();
+    // Não deve exibir erro de anexo obrigatório
+    expect(screen.queryByText(/Comprovante obrigatório para valores acima de R\$ 1.000,00/i)).not.toBeInTheDocument();
   });
 });
 

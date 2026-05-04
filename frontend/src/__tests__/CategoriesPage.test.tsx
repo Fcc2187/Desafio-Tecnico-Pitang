@@ -3,13 +3,15 @@ import { render, screen, waitFor } from '../test/test-utils';
 import userEvent from '@testing-library/user-event';
 import { CategoriesPage } from '../pages/categories/CategoriesPage';
 
-const mockCreateCategory = vi.fn(() => Promise.resolve());
+const { mockCreateCategory } = vi.hoisted(() => ({
+  mockCreateCategory: vi.fn(() => Promise.resolve()),
+}));
 
 vi.mock('../services/reimbursements.service', () => ({
   listCategories: vi.fn(() => Promise.resolve([
     { id: 'cat-1', nome: 'Alimentação', ativo: true, limiteValor: null }
   ])),
-  createCategory: (...args: any[]) => mockCreateCategory(...args),
+  createCategory: mockCreateCategory,
 }));
 
 describe('CategoriesPage - Diferencial Premium', () => {

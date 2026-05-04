@@ -42,7 +42,7 @@ export const ReimbursementForm = ({ onClose, initialData }: ReimbursementFormPro
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   
-  const { data: categories, isLoading: loadingCategories } = useQuery({
+  const { data: categories } = useQuery({
     queryKey: ['categories'],
     queryFn: reimbursementService.listCategories,
   });
@@ -116,7 +116,7 @@ export const ReimbursementForm = ({ onClose, initialData }: ReimbursementFormPro
           'Arquivo muito grande!',
           'O comprovante deve ter no máximo 5MB.'
         );
-        e.target.value = ''; // Limpar input
+        e.target.value = '';
         return;
       }
       setSelectedFile(file);

@@ -174,4 +174,126 @@ describe('Reimbursements Module Integration Tests', () => {
     expect(updateResponse.status).toBe(200);
     expect(Number(updateResponse.body.valor)).toBe(1500);
   });
+
+  describe('Business Rules & Status Transitions', () => {
+    let reimbursementId: string;
+
+    beforeEach(async () => {
+      const response = await request(app)
+        .post('/reimbursements')
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          categoriaId: categoryId,
+          descricao: 'Solicitação para teste de fluxo',
+          valor: 2000,
+          dataDespesa: new Date().toISOString()
+        });
+      reimbursementId = response.body.id;
+    });
+
+    it('should NOT allow submitting a reimbursement > 1000 without an attachment', async () => {
+      const response = await request(app)
+        .post(`/reimbursements/${reimbursementId}/submit`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('Comprovante obrigatório para valores acima de R$ 1.000,00');
+    });
+
+    it('should allow submitting a reimbursement > 1000 WITH an attachment', async () => {
+      // Adicionar anexo
+      await request(app)
+        .post(`/reimbursements/${reimbursementId}/attachments`)
+        .set('Authorization', `Bearer ${token}`)
+        .attach('file', Buffer.from('fake pdf'), 'recibo.pdf');
+
+      const response = await request(app)
+        .post(`/reimbursements/${reimbursementId}/submit`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.status).toBe('ENVIADO');
+    });
+
+    it('should NOT allow a COLABORADOR to approve their own reimbursement (403)', async () => {
+      const response = await request(app)
+        .post(`/reimbursements/${reimbursementId}/approve`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(403);
+    });
+
+    it('should NOT allow rejecting without a justification (400)', async () => {
+      // Primeiro enviar para análise (com anexo para passar na regra de > 1000)
+      await request(app).post(`/reimbursements/${reimbursementId}/attachments`).set('Authorization', `Bearer ${token}`).attach('file', Buffer.from('f'), 'f.pdf');
+      await request(app).post(`/reimbursements/${reimbursementId}/submit`).set('Authorization', `Bearer ${token}`);
+
+      // Criar e Logar como GESTOR
+      const gestorPassword = await bcrypt.hash('password123', 10);
+      await prisma.user.create({
+        data: { nome: 'Gestor', email: 'gestor@test.com', senha: gestorPassword, perfil: 'GESTOR' }
+      });
+      const loginGestor = await request(app).post('/auth/login').send({ email: 'gestor@test.com', senha: 'password123' });
+      const gestorToken = loginGestor.body.token;
+
+      const response = await request(app)
+        .post(`/reimbursements/${reimbursementId}/reject`)
+        .set('Authorization', `Bearer ${gestorToken}`)
+        .send({ justificativaRejeicao: '' });
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should allow GESTOR to approve a submitted reimbursement', async () => {
+      await request(app).post(`/reimbursements/${reimbursementId}/attachments`).set('Authorization', `Bearer ${token}`).attach('file', Buffer.from('f'), 'f.pdf');
+      await request(app).post(`/reimbursements/${reimbursementId}/submit`).set('Authorization', `Bearer ${token}`);
+
+      const gestorPassword = await bcrypt.hash('password123', 10);
+      await prisma.user.create({
+        data: { nome: 'Gestor 2', email: 'gestor2@test.com', senha: gestorPassword, perfil: 'GESTOR' }
+      });
+      const loginGestor = await request(app).post('/auth/login').send({ email: 'gestor2@test.com', senha: 'password123' });
+      const gestorToken = loginGestor.body.token;
+
+      const response = await request(app)
+        .post(`/reimbursements/${reimbursementId}/approve`)
+        .set('Authorization', `Bearer ${gestorToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.status).toBe('APROVADO');
+    });
+
+    it('should allow FINANCEIRO to pay an approved reimbursement', async () => {
+      // Fluxo completo: Rascunho -> Enviado -> Aprovado
+      await request(app).post(`/reimbursements/${reimbursementId}/attachments`).set('Authorization', `Bearer ${token}`).attach('file', Buffer.from('f'), 'f.pdf');
+      await request(app).post(`/reimbursements/${reimbursementId}/submit`).set('Authorization', `Bearer ${token}`);
+      
+      const gestorPassword = await bcrypt.hash('password123', 10);
+      await prisma.user.create({ data: { nome: 'G', email: 'g@t.com', senha: gestorPassword, perfil: 'GESTOR' } });
+      const lg = await request(app).post('/auth/login').send({ email: 'g@t.com', senha: 'password123' });
+      await request(app).post(`/reimbursements/${reimbursementId}/approve`).set('Authorization', `Bearer ${lg.body.token}`);
+
+      // Logar como FINANCEIRO
+      const finPassword = await bcrypt.hash('password123', 10);
+      await prisma.user.create({ data: { nome: 'Fin', email: 'fin@test.com', senha: finPassword, perfil: 'FINANCEIRO' } });
+      const loginFin = await request(app).post('/auth/login').send({ email: 'fin@test.com', senha: 'password123' });
+      const finToken = loginFin.body.token;
+
+      const response = await request(app)
+        .post(`/reimbursements/${reimbursementId}/pay`)
+        .set('Authorization', `Bearer ${finToken}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.status).toBe('PAGO');
+    });
+
+    it('should allow owner to cancel a draft', async () => {
+      const response = await request(app)
+        .post(`/reimbursements/${reimbursementId}/cancel`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.status).toBe('CANCELADO');
+    });
+  });
 });

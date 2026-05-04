@@ -209,8 +209,8 @@ export const submitReimbursement = async (req: Request, res: Response) => {
     throw new AppError('Comprovante obrigatório para valores acima de R$ 1.000,00', 400);
   }
 
-  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    await tx.reimbursement.update({
+  const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const reimbursement = await tx.reimbursement.update({
       where: { id },
       data: { status: ReimbursementStatus.ENVIADO },
     });
@@ -223,9 +223,11 @@ export const submitReimbursement = async (req: Request, res: Response) => {
         observacao: 'Solicitação enviada para análise do gestor',
       },
     });
+
+    return reimbursement;
   });
 
-  res.json({ message: 'Solicitação enviada com sucesso' });
+  res.json(updated);
 };
 
 export const approveReimbursement = async (req: Request, res: Response) => {
@@ -237,8 +239,8 @@ export const approveReimbursement = async (req: Request, res: Response) => {
   if (!item) throw new AppError('Solicitação não encontrada', 404);
   if (item.status !== ReimbursementStatus.ENVIADO) throw new AppError('Apenas solicitações enviadas podem ser aprovadas', 400);
 
-  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    await tx.reimbursement.update({
+  const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const reimbursement = await tx.reimbursement.update({
       where: { id },
       data: { status: ReimbursementStatus.APROVADO },
     });
@@ -251,9 +253,11 @@ export const approveReimbursement = async (req: Request, res: Response) => {
         observacao: 'Solicitação aprovada pelo gestor',
       },
     });
+
+    return reimbursement;
   });
 
-  res.json({ message: 'Solicitação aprovada' });
+  res.json(updated);
 };
 
 export const rejectReimbursement = async (req: Request, res: Response) => {
@@ -266,8 +270,12 @@ export const rejectReimbursement = async (req: Request, res: Response) => {
   if (!item) throw new AppError('Solicitação não encontrada', 404);
   if (item.status !== ReimbursementStatus.ENVIADO) throw new AppError('Apenas solicitações enviadas podem ser rejeitadas', 400);
 
-  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    await tx.reimbursement.update({
+  if (!justificativaRejeicao || justificativaRejeicao.trim() === '') {
+    throw new AppError('A justificativa de rejeição é obrigatória', 400);
+  }
+
+  const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const reimbursement = await tx.reimbursement.update({
       where: { id },
       data: { 
         status: ReimbursementStatus.REJEITADO,
@@ -283,9 +291,11 @@ export const rejectReimbursement = async (req: Request, res: Response) => {
         observacao: `Solicitação rejeitada. Motivo: ${justificativaRejeicao}`,
       },
     });
+
+    return reimbursement;
   });
 
-  res.json({ message: 'Solicitação rejeitada' });
+  res.json(updated);
 };
 
 export const payReimbursement = async (req: Request, res: Response) => {
@@ -297,8 +307,8 @@ export const payReimbursement = async (req: Request, res: Response) => {
   if (!item) throw new AppError('Solicitação não encontrada', 404);
   if (item.status !== ReimbursementStatus.APROVADO) throw new AppError('Apenas solicitações aprovadas podem ser pagas', 400);
 
-  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    await tx.reimbursement.update({
+  const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const reimbursement = await tx.reimbursement.update({
       where: { id },
       data: { status: ReimbursementStatus.PAGO },
     });
@@ -311,9 +321,11 @@ export const payReimbursement = async (req: Request, res: Response) => {
         observacao: 'Pagamento confirmado pelo financeiro',
       },
     });
+
+    return reimbursement;
   });
 
-  res.json({ message: 'Solicitação marcada como paga' });
+  res.json(updated);
 };
 
 export const cancelReimbursement = async (req: Request, res: Response) => {
@@ -329,8 +341,8 @@ export const cancelReimbursement = async (req: Request, res: Response) => {
     throw new AppError('Esta solicitação não pode mais ser cancelada', 400);
   }
 
-  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    await tx.reimbursement.update({
+  const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+    const reimbursement = await tx.reimbursement.update({
       where: { id },
       data: { status: ReimbursementStatus.CANCELADO },
     });
@@ -343,9 +355,11 @@ export const cancelReimbursement = async (req: Request, res: Response) => {
         observacao: 'Solicitação cancelada pelo colaborador',
       },
     });
+
+    return reimbursement;
   });
 
-  res.json({ message: 'Solicitação cancelada' });
+  res.json(updated);
 };
 
 export const getDashboardStats = async (req: Request, res: Response) => {
