@@ -21,8 +21,7 @@ export const uploadAttachment = async (req: Request, res: Response) => {
   if (reimbursement.solicitanteId !== userId) throw new AppError('Ação permitida apenas para o dono', 403);
 
   const attachment = await prisma.$transaction(async (tx) => {
-    // Garantir que apenas um arquivo exista por solicitação (substituição)
-    await tx.attachment.deleteMany({ where: { solicitacaoId: String(id) } });
+  await tx.attachment.deleteMany({ where: { solicitacaoId: String(id) } });
 
     const att = await tx.attachment.create({
       data: {

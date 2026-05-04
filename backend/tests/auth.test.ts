@@ -75,3 +75,4 @@ describe('Auth Module Integration Tests', () => {
     expect(response.body.message).toBe('Credenciais inválidas');
   });
 });
+

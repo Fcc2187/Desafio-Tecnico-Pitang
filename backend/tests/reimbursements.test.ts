@@ -127,11 +127,7 @@ describe('Reimbursements Module Integration Tests', () => {
     const attachResponse = await request(app)
       .post(`/reimbursements/${reimbursementId}/attachments`)
       .set('Authorization', `Bearer ${token}`)
-      .send({
-        nomeArquivo: 'comprovante.pdf',
-        urlArquivo: 'https://storage.com/file.pdf',
-        tipoArquivo: 'application/pdf'
-      });
+      .attach('file', Buffer.from('fake pdf content'), 'comprovante.pdf');
 
     expect(attachResponse.status).toBe(201);
     expect(attachResponse.body.nomeArquivo).toBe('comprovante.pdf');
@@ -141,7 +137,7 @@ describe('Reimbursements Module Integration Tests', () => {
       .set('Authorization', `Bearer ${token}`);
 
     const history = historyResponse.body.history;
-    const hasAttachmentHistory = history.some((h: any) => h.observacao.includes('Anexo adicionado'));
+    const hasAttachmentHistory = history.some((h: any) => h.observacao.includes('Anexo carregado'));
     
     expect(hasAttachmentHistory).toBe(true);
   });

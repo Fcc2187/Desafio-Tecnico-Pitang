@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import dayjs from 'dayjs';
-import path from 'path';
 import uploadConfig from './config/upload';
 import { errorHandler } from './middlewares/errorHandler';
 import { authRoutes } from './modules/auth/auth.routes';

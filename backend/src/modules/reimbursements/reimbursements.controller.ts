@@ -80,7 +80,6 @@ export const listReimbursements = async (req: Request, res: Response) => {
     };
   }
 
-  // Ordenação dinâmica
   const orderByField = (sortField as string) || 'criadoEm';
   const orderDirection = (sortOrder as string) || 'desc';
 
@@ -152,10 +151,6 @@ export const updateReimbursement = async (req: Request, res: Response) => {
 
   const finalCategoryId = categoriaId || item.categoriaId;
   const finalValor = valor || item.valor;
-  const incomingAttachments = req.body.attachments || [];
-  const hasAttachments = item.attachments.length > 0 || incomingAttachments.length > 0;
-
-
 
   const category = await prisma.category.findUnique({ where: { id: finalCategoryId } });
   if (category?.limiteValor && Number(finalValor) > Number(category.limiteValor)) {

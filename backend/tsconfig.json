@@ -14,7 +14,7 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
     "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
+    "ignoreDeprecations": "5.0",
     "types": [
       "node",
       "jest"
@@ -27,8 +27,6 @@
   },
   "include": [
     "src/**/*",
-    "prisma/**/*",
-    "tests/**/*",
     "src/env.ts"
   ],
   "exclude": [
