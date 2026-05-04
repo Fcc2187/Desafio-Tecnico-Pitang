@@ -12,14 +12,6 @@ export const createReimbursementSchema = z.object({
       urlArquivo: z.string().url('URL do arquivo inválida'),
       tipoArquivo: z.string()
     })).optional(),
-  }).superRefine((data, ctx) => {
-    if (data.valor > 1000 && (!data.attachments || data.attachments.length === 0)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Comprovante obrigatório para valores acima de R$ 1.000,00',
-        path: ['attachments'],
-      });
-    }
   }),
 });
 

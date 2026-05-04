@@ -5,7 +5,7 @@ import * as reimbursementService from '../../services/reimbursements.service';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Clock, CheckCircle, XCircle, DollarSign, Send, RotateCcw, User, FileText } from 'lucide-react';
-import { showErrorAlert, showWarningAlert } from '../../components/ui/alerts';
+import { showErrorAlert, showWarningAlert, showSuccessAlert } from '../../components/ui/alerts';
 
 interface ReimbursementDetailProps {
   reimbursement: any;
@@ -44,9 +44,19 @@ export const ReimbursementDetail = ({ reimbursement: initialItem, onClose, onEdi
         case 'cancel': return reimbursementService.cancel(item.id);
       }
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['reimbursements'] });
       queryClient.invalidateQueries({ queryKey: ['reimbursement', initialItem.id] });
+      
+      const messages: Record<string, string> = {
+        submit: 'Solicitação enviada com sucesso!',
+        approve: 'Solicitação aprovada!',
+        reject: 'Solicitação rejeitada.',
+        pay: 'Pagamento confirmado!',
+        cancel: 'Solicitação cancelada.',
+      };
+
+      showSuccessAlert('Concluído', messages[variables.action] || 'Ação realizada com sucesso.');
       onClose();
     },
     onError: (error: any) => {
@@ -162,7 +172,7 @@ export const ReimbursementDetail = ({ reimbursement: initialItem, onClose, onEdi
                       </Box>
                     )}
                     <Box overflow="hidden">
-                      <Text fontSize="13px" fontWeight="700" color="#101828" truncate>{att.nomeArquivo}</Text>
+                      <Text fontSize="13px" fontWeight="700" color="#101828" isTruncated>{att.nomeArquivo}</Text>
                       <Text fontSize="11px" color="var(--s-muted)">Clique para abrir o arquivo original</Text>
                     </Box>
                   </Flex>
@@ -232,32 +242,32 @@ export const ReimbursementDetail = ({ reimbursement: initialItem, onClose, onEdi
 
         <Flex gap={3} flexWrap="wrap" direction={{ base: 'column', sm: 'row' }}>
           {canSubmit && (
-            <Button variant="outline" color="blue.600" flex={1} width={{ base: '100%', sm: 'auto' }} onClick={() => onEdit(item)}>
+            <Button variant="outline" color="blue.600" flex="1 0 auto" whiteSpace="nowrap" width={{ base: '100%', sm: 'auto' }} onClick={() => onEdit(item)}>
               Editar Rascunho
             </Button>
           )}
           {canSubmit && (
-            <Button bg="blue.600" color="white" flex={1} width={{ base: '100%', sm: 'auto' }} onClick={() => handleAction('submit')} loading={mutation.isPending}>
+            <Button bg="blue.600" color="white" flex="1.5 0 auto" whiteSpace="nowrap" width={{ base: '100%', sm: 'auto' }} onClick={() => handleAction('submit')} loading={mutation.isPending}>
               <Send size={16} /> Enviar para Aprovação
             </Button>
           )}
           {canApprove && !showRejectInput && (
-            <Button bg="#10a37f" color="white" flex={1} width={{ base: '100%', sm: 'auto' }} onClick={() => handleAction('approve')} loading={mutation.isPending}>
+            <Button bg="#10a37f" color="white" flex="1 0 auto" whiteSpace="nowrap" width={{ base: '100%', sm: 'auto' }} onClick={() => handleAction('approve')} loading={mutation.isPending}>
               <CheckCircle size={16} /> Aprovar
             </Button>
           )}
           {(canApprove || user?.perfil === 'ADMIN') && (
-            <Button bg="var(--p-accent)" color="white" flex={showRejectInput ? 1 : 'none'} width={{ base: '100%', sm: 'auto' }} onClick={() => handleAction('reject')} loading={mutation.isPending}>
+            <Button bg="var(--p-accent)" color="white" flex={showRejectInput ? "1 0 auto" : "none"} whiteSpace="nowrap" width={{ base: '100%', sm: 'auto' }} onClick={() => handleAction('reject')} loading={mutation.isPending}>
               <XCircle size={16} /> {showRejectInput ? 'Confirmar Rejeição' : 'Rejeitar'}
             </Button>
           )}
           {canPay && (
-            <Button bg="teal.600" color="white" flex={1} width={{ base: '100%', sm: 'auto' }} onClick={() => handleAction('pay')} loading={mutation.isPending}>
+            <Button bg="teal.600" color="white" flex="1 0 auto" whiteSpace="nowrap" width={{ base: '100%', sm: 'auto' }} onClick={() => handleAction('pay')} loading={mutation.isPending}>
               <DollarSign size={16} /> Confirmar Pagamento
             </Button>
           )}
           {canCancel && !showRejectInput && (
-            <Button variant="outline" color="red.600" border="1px solid red.200" flex={1} width={{ base: '100%', sm: 'auto' }} onClick={() => handleAction('cancel')} loading={mutation.isPending}>
+            <Button variant="outline" color="red.600" border="1px solid red.200" flex="1 0 auto" whiteSpace="nowrap" width={{ base: '100%', sm: 'auto' }} onClick={() => handleAction('cancel')} loading={mutation.isPending}>
               Cancelar
             </Button>
           )}

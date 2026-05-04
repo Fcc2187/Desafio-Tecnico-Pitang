@@ -155,9 +155,7 @@ export const updateReimbursement = async (req: Request, res: Response) => {
   const incomingAttachments = req.body.attachments || [];
   const hasAttachments = item.attachments.length > 0 || incomingAttachments.length > 0;
 
-  if (Number(finalValor) > 1000 && !hasAttachments) {
-    throw new AppError('Comprovante obrigatório para valores acima de R$ 1.000,00', 400);
-  }
+
 
   const category = await prisma.category.findUnique({ where: { id: finalCategoryId } });
   if (category?.limiteValor && Number(finalValor) > Number(category.limiteValor)) {
@@ -210,6 +208,11 @@ export const submitReimbursement = async (req: Request, res: Response) => {
   if (!item) throw new AppError('Solicitação não encontrada', 404);
   if (item.solicitanteId !== userId) throw new AppError('Ação permitida apenas para o dono', 403);
   if (item.status !== ReimbursementStatus.RASCUNHO) throw new AppError('Apenas rascunhos podem ser enviados', 400);
+
+  const attachmentsCount = await prisma.attachment.count({ where: { solicitacaoId: id } });
+  if (Number(item.valor) > 1000 && attachmentsCount === 0) {
+    throw new AppError('Comprovante obrigatório para valores acima de R$ 1.000,00', 400);
+  }
 
   await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.reimbursement.update({

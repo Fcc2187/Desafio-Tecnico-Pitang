@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Clock, CheckCircle, DollarSign, TrendingUp, History } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import * as reimbursementService from '../../services/reimbursements.service';
+import axios from 'axios';
 
 interface StatCardProps {
   label: string;
@@ -10,6 +11,7 @@ interface StatCardProps {
   helpText: string;
   icon: any;
   accentColor: string;
+  convertedValues?: { usd: string; eur: string };
 }
 
 const actionColorMap: Record<string, string> = {
@@ -22,7 +24,7 @@ const actionColorMap: Record<string, string> = {
   CANCELED: 'orange',
 };
 
-const StatCard = ({ label, value, helpText, icon: Icon, accentColor }: StatCardProps) => (
+const StatCard = ({ label, value, helpText, icon: Icon, accentColor, convertedValues }: StatCardProps) => (
   <Box
     bg="rgba(255,255,255,0.92)"
     p="24px"
@@ -47,6 +49,17 @@ const StatCard = ({ label, value, helpText, icon: Icon, accentColor }: StatCardP
         <Text fontSize="30px" fontWeight="900" letterSpacing="-0.04em" color="var(--s-text)" lineHeight={1}>
           {value}
         </Text>
+        
+        {convertedValues && (
+          <Flex gap={2} mt={3}>
+            <Badge variant="subtle" colorPalette="blue" fontSize="13px" fontWeight="bold" borderRadius="6px">
+              $ {convertedValues.usd}
+            </Badge>
+            <Badge variant="subtle" colorPalette="purple" fontSize="13px" fontWeight="bold" borderRadius="6px">
+              € {convertedValues.eur}
+            </Badge>
+          </Flex>
+        )}
       </Box>
       <Box
         w="40px" h="40px" borderRadius="10px"
@@ -68,6 +81,18 @@ export const DashboardPage = () => {
     queryFn: reimbursementService.getStats,
   });
 
+  const { data: rates } = useQuery({
+    queryKey: ['exchange-rates'],
+    queryFn: async () => {
+      const resp = await axios.get('https://economia.awesomeapi.com.br/last/USD-BRL,EUR-BRL');
+      return {
+        usd: parseFloat(resp.data.USDBRL.bid),
+        eur: parseFloat(resp.data.EURBRL.bid),
+      };
+    },
+    staleTime: 1000 * 60 * 30, // 30 min
+  });
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
   };
@@ -79,6 +104,15 @@ export const DashboardPage = () => {
       </Center>
     );
   }
+
+  const convertValue = (brlValue: number) => {
+    if (!rates) return undefined;
+    return {
+      usd: (brlValue / rates.usd).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      eur: (brlValue / rates.eur).toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+    };
+  };
+
 
   const { stats, recentActivities } = data || { stats: { pendentes: 0, aprovadasMes: 0, totalPago: 0 }, recentActivities: [] };
 
@@ -135,6 +169,7 @@ export const DashboardPage = () => {
           helpText="Este mês"
           icon={CheckCircle}
           accentColor="var(--p-green)"
+          convertedValues={convertValue(stats.aprovadasMes)}
         />
         <StatCard
           label="Total Pago"
@@ -142,6 +177,7 @@ export const DashboardPage = () => {
           helpText="Creditado em conta"
           icon={DollarSign}
           accentColor="var(--p-blue)"
+          convertedValues={convertValue(stats.totalPago)}
         />
         <StatCard
           label="Crescimento"
