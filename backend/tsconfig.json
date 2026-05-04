@@ -7,7 +7,7 @@
       "esnext"
     ],
     "outDir": "./dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -25,7 +25,8 @@
   },
   "include": [
     "src/**/*",
-    "src/env.ts"
+    "src/env.ts",
+    "prisma/seed.ts"
   ],
   "exclude": [
     "node_modules"
