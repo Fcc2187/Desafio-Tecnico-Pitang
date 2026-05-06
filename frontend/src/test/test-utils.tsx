@@ -3,7 +3,7 @@ import { render, type RenderOptions } from '@testing-library/react';
 import { Provider } from '../components/ui/provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '../contexts/AuthContext';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,7 +15,7 @@ const queryClient = new QueryClient({
 
 const AllTheProviders = ({ children }: { children: ReactNode }) => {
   return (
-    <BrowserRouter>
+    <MemoryRouter>
       <QueryClientProvider client={queryClient}>
         <Provider>
           <AuthProvider>
@@ -23,7 +23,7 @@ const AllTheProviders = ({ children }: { children: ReactNode }) => {
           </AuthProvider>
         </Provider>
       </QueryClientProvider>
-    </BrowserRouter>
+    </MemoryRouter>
   );
 };
 

@@ -59,4 +59,29 @@ describe('Categories Module Integration Tests', () => {
     expect(response.status).toBe(200);
     expect(response.body.length).toBe(1);
   });
+
+  it('should be able to update a category as ADMIN', async () => {
+    const cat = await prisma.category.create({ data: { nome: 'Update Me' } });
+
+    const response = await request(app)
+      .put(`/categories/${cat.id}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ nome: 'Updated Name' });
+
+    expect(response.status).toBe(200);
+    expect(response.body.nome).toBe('Updated Name');
+  });
+
+  it('should be able to soft delete a category as ADMIN', async () => {
+    const cat = await prisma.category.create({ data: { nome: 'Delete Me' } });
+
+    const response = await request(app)
+      .delete(`/categories/${cat.id}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(response.status).toBe(204);
+
+    const deletedCat = await prisma.category.findUnique({ where: { id: cat.id } });
+    expect(deletedCat?.ativo).toBe(false);
+  });
 });

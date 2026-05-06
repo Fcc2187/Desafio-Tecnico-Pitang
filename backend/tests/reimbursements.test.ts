@@ -7,6 +7,7 @@ import bcrypt from 'bcryptjs';
 describe('Reimbursements Module Integration Tests', () => {
   let token: string;
   let categoryId: string;
+  let userId: string;
 
   beforeEach(async () => {
     await cleanDatabase();
@@ -27,6 +28,7 @@ describe('Reimbursements Module Integration Tests', () => {
         perfil: 'COLABORADOR'
       }
     });
+    userId = user.id;
 
     const loginResponse = await request(app)
       .post('/auth/login')
@@ -294,6 +296,52 @@ describe('Reimbursements Module Integration Tests', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.status).toBe('CANCELADO');
+    });
+
+    describe('Dashboard & History', () => {
+      it('should return correct dashboard stats', async () => {
+        await prisma.reimbursement.create({
+          data: {
+            solicitanteId: userId,
+            categoriaId: categoryId,
+            descricao: 'Pago',
+            valor: 100,
+            status: 'PAGO',
+            dataDespesa: new Date()
+          }
+        });
+
+        const response = await request(app)
+          .get('/reimbursements/stats')
+          .set('Authorization', `Bearer ${token}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.stats).toHaveProperty('totalPago');
+        expect(response.body.stats).toHaveProperty('pendentes');
+        expect(response.body.stats).toHaveProperty('aprovadasMes');
+      });
+
+      it('should return history for a specific reimbursement', async () => {
+        const createResponse = await request(app)
+          .post('/reimbursements')
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+            categoriaId: categoryId,
+            descricao: 'Histórico Teste',
+            valor: 50,
+            dataDespesa: new Date().toISOString()
+          });
+        
+        const id = createResponse.body.id;
+
+        const response = await request(app)
+          .get(`/reimbursements/${id}/history`)
+          .set('Authorization', `Bearer ${token}`);
+
+        expect(response.status).toBe(200);
+        expect(Array.isArray(response.body)).toBe(true);
+        expect(response.body.length).toBeGreaterThan(0);
+      });
     });
   });
 });
