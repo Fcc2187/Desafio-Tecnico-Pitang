@@ -204,9 +204,17 @@ export const submitReimbursement = async (req: Request, res: Response) => {
   if (item.solicitanteId !== userId) throw new AppError('Ação permitida apenas para o dono', 403);
   if (item.status !== ReimbursementStatus.RASCUNHO) throw new AppError('Apenas rascunhos podem ser enviados', 400);
 
+  const category = await prisma.category.findUnique({ where: { id: item.categoriaId } });
   const attachmentsCount = await prisma.attachment.count({ where: { solicitacaoId: id } });
-  if (Number(item.valor) > 1000 && attachmentsCount === 0) {
-    throw new AppError('Comprovante obrigatório para valores acima de R$ 1.000,00', 400);
+  
+  // Regra: Anexo obrigatório se valor > 1.000,00 OU se ultrapassar o limite da categoria
+  const needsAttachment = Number(item.valor) > 1000 || (category?.limiteValor && Number(item.valor) > Number(category.limiteValor));
+  
+  if (needsAttachment && attachmentsCount === 0) {
+    const limitMsg = category?.limiteValor && Number(item.valor) > Number(category.limiteValor) 
+      ? `o limite da categoria (R$ ${Number(category.limiteValor).toFixed(2)})` 
+      : 'R$ 1.000,00';
+    throw new AppError(`Comprovante obrigatório para solicitações que excedem ${limitMsg}`, 400);
   }
 
   const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -364,6 +372,7 @@ export const cancelReimbursement = async (req: Request, res: Response) => {
 
 export const getDashboardStats = async (req: Request, res: Response) => {
   const { id, perfil } = req.user!;
+  const { status } = req.query;
   
   const where: any = {};
   if (perfil === Perfil.COLABORADOR) {
@@ -394,13 +403,18 @@ export const getDashboardStats = async (req: Request, res: Response) => {
       _sum: { valor: true }
     }),
     prisma.reimbursementHistory.findMany({
-      where: { solicitacao: where },
+      where: { 
+        solicitacao: { 
+          ...where,
+          status: status ? (status as string) : undefined
+        } 
+      },
       include: {
-        solicitacao: { select: { id: true, descricao: true } },
+        solicitacao: { select: { id: true, descricao: true, status: true } },
         usuario: { select: { nome: true } }
       },
       orderBy: { criadoEm: 'desc' },
-      take: 5
+      take: 10
     })
   ]);
 
@@ -412,4 +426,33 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     },
     recentActivities
   });
+};
+
+export const getReimbursementHistory = async (req: Request, res: Response) => {
+  const id = req.params.id as string;
+
+  const reimbursement = await prisma.reimbursement.findUnique({
+    where: { id },
+    select: { id: true }
+  });
+
+  if (!reimbursement) {
+    throw new AppError('Solicitação não encontrada', 404);
+  }
+
+  const history = await prisma.reimbursementHistory.findMany({
+    where: { solicitacaoId: id },
+    include: {
+      usuario: {
+        select: {
+          id: true,
+          nome: true,
+          perfil: true,
+        },
+      },
+    },
+    orderBy: { criadoEm: 'desc' },
+  });
+
+  res.json(history);
 };

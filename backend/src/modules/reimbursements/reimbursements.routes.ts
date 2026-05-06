@@ -70,6 +70,8 @@ routes.post(
   controller.cancelReimbursement
 );
 
+routes.get('/:id/history', validate(idParamSchema), controller.getReimbursementHistory);
+
 routes.use('/:id/attachments', attachmentsRoutes);
 
 export { routes as reimbursementRoutes };

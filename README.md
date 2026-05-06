@@ -54,7 +54,12 @@ Painel dinâmico com:
 - Contagem de solicitações pendentes.
 - Feed de atividades recentes em tempo real.
 
-### **6. Regras de Negócio Implementadas**
+### **6. Interface Premium e Experiência do Usuário (UX)**
+- **SweetAlert2**: Todos os alertas de sucesso, erro e avisos foram personalizados com um design moderno e elegante.
+- **Confirmações de Segurança**: Ações críticas (como aprovar, rejeitar, pagar e cancelar) possuem diálogos de confirmação estilizados para evitar ações acidentais.
+- **Feedback Visual**: Uso intensivo de loadings, skeletons e estados vazios (empty states) via Chakra UI.
+
+### **7. Regras de Negócio Implementadas**
 - **Limites por Categoria**: Valor máximo configurável por tipo de despesa.
 - **Anexo Obrigatório**: Travas para solicitações acima de **R$ 1.000,00**.
 - **Bloqueio de Datas Futuras**: Impedimento de lançamentos antecipados.

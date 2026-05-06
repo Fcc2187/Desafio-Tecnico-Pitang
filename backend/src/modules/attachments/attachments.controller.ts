@@ -12,6 +12,12 @@ export const uploadAttachment = async (req: Request, res: Response) => {
   }
 
   const { filename, originalname, mimetype } = req.file;
+  
+  const allowedMimeTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+  if (!allowedMimeTypes.includes(mimetype)) {
+    throw new AppError('Tipo de arquivo inválido. Permitidos: JPG, PNG, PDF', 400);
+  }
+
   const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
   const urlArquivo = `${baseUrl}/files/${filename}`;
 

@@ -5,7 +5,7 @@ import * as reimbursementService from '../../services/reimbursements.service';
 import { Plus, X, Tag, Edit3, ShieldCheck, Layers3, Search, Trash2 } from 'lucide-react';
 import { Field } from '../../components/ui/field';
 import { Switch } from '../../components/ui/switch';
-import { showErrorAlert, showSuccessAlert } from '../../components/ui/alerts';
+import { showErrorAlert, showSuccessAlert, showConfirmAlert } from '../../components/ui/alerts';
 
 export const CategoriesPage = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -53,8 +53,13 @@ export const CategoriesPage = () => {
     }
   });
 
-  const handleDelete = (id: string) => {
-    if (window.confirm('Deseja realmente excluir esta categoria? Esta ação é irreversível.')) {
+  const handleDelete = async (id: string) => {
+    const result = await showConfirmAlert(
+      'Excluir Categoria?',
+      'Deseja realmente excluir esta categoria? Esta ação é irreversível.'
+    );
+
+    if (result.isConfirmed) {
       deleteMutation.mutate(id);
     }
   };

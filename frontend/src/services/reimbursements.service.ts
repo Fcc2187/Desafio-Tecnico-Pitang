@@ -38,8 +38,10 @@ export const list = async (page: number = 1, filters?: { status?: string, catego
   return response.data;
 };
 
-export const getStats = async (): Promise<any> => {
-  const response = await api.get('/reimbursements/stats');
+export const getStats = async (status?: string): Promise<any> => {
+  let url = '/reimbursements/stats';
+  if (status) url += `?status=${status}`;
+  const response = await api.get(url);
   return response.data;
 };
 

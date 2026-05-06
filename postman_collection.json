@@ -333,7 +333,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"motivoRejeicao\": \"Valor acima do permitido para esta categoria.\"\n}",
+									"raw": "{\n    \"justificativaRejeicao\": \"Valor acima do permitido para esta categoria.\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"

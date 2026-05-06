@@ -199,7 +199,7 @@ describe('Reimbursements Module Integration Tests', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(400);
-      expect(response.body.message).toBe('Comprovante obrigatório para valores acima de R$ 1.000,00');
+      expect(response.body.message).toBe('Comprovante obrigatório para solicitações que excedem R$ 1.000,00');
     });
 
     it('should allow submitting a reimbursement > 1000 WITH an attachment', async () => {

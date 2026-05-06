@@ -3,14 +3,19 @@ import { AppError } from '../utils/AppError';
 import { ZodError } from 'zod';
 
 const getErrorName = (statusCode: number) => {
-  switch (statusCode) {
-    case 400: return 'Bad Request';
-    case 401: return 'Unauthorized';
-    case 403: return 'Forbidden';
-    case 404: return 'Not Found';
-    case 409: return 'Conflict';
-    default: return 'Internal Server Error';
-  }
+  const errors: Record<number, string> = {
+    400: 'Bad Request',
+    401: 'Unauthorized',
+    402: 'Payment Required',
+    403: 'Forbidden',
+    404: 'Not Found',
+    405: 'Method Not Allowed',
+    409: 'Conflict',
+    422: 'Unprocessable Entity',
+    429: 'Too Many Requests',
+    500: 'Internal Server Error',
+  };
+  return errors[statusCode] || 'Error';
 };
 
 export const errorHandler = (
@@ -28,18 +33,24 @@ export const errorHandler = (
   }
 
   if (err instanceof ZodError) {
+    // Pegar a primeira mensagem de erro para ser o "message" principal
+    const mainMessage = err.errors[0]?.message || 'Falha na validação dos dados';
+    
     return res.status(400).json({
-      message: 'Validation failed',
+      message: mainMessage,
       statusCode: 400,
       error: 'Bad Request',
-      details: err.issues,
+      details: err.errors.map(e => ({
+        path: e.path.join('.'),
+        message: e.message
+      })),
     });
   }
 
-  console.error(err);
+  console.error('[Internal Error]:', err);
 
   return res.status(500).json({
-    message: 'Internal server error',
+    message: 'Ocorreu um erro interno no servidor',
     statusCode: 500,
     error: 'Internal Server Error',
   });

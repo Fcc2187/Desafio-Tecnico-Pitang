@@ -4,6 +4,7 @@ import { Clock, CheckCircle, DollarSign, TrendingUp, History } from 'lucide-reac
 import { useQuery } from '@tanstack/react-query';
 import * as reimbursementService from '../../services/reimbursements.service';
 import axios from 'axios';
+import { useState } from 'react';
 
 interface StatCardProps {
   label: string;
@@ -75,10 +76,11 @@ const StatCard = ({ label, value, helpText, icon: Icon, accentColor, convertedVa
 
 export const DashboardPage = () => {
   const { user } = useAuth();
+  const [statusFilter, setStatusFilter] = useState('');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['dashboard-stats'],
-    queryFn: reimbursementService.getStats,
+    queryKey: ['dashboard-stats', statusFilter],
+    queryFn: () => reimbursementService.getStats(statusFilter),
   });
 
   const { data: rates } = useQuery({
@@ -201,9 +203,29 @@ export const DashboardPage = () => {
             <Text fontWeight="800" fontSize="15px" color="var(--s-text)">Atividades Recentes</Text>
             <Text fontSize="12px" color="var(--s-muted)" mt="2px">Últimas movimentações do sistema</Text>
           </Box>
-          <Badge variant="subtle" colorPalette="red" borderRadius="999px" px={3} py={1} fontSize="10px" fontWeight="700">
-            Atualização contínua
-          </Badge>
+          <Flex gap={3} align="center">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              style={{
+                padding: '8px 12px', borderRadius: '10px',
+                border: '1px solid #e5e7eb', background: 'white',
+                fontSize: '12px', outline: 'none', color: '#475467',
+                fontWeight: '600', cursor: 'pointer', boxShadow: 'var(--shadow-sm)'
+              }}
+            >
+              <option value="">Filtrar por Status</option>
+              <option value="RASCUNHO">Rascunho</option>
+              <option value="ENVIADO">Enviado</option>
+              <option value="APROVADO">Aprovado</option>
+              <option value="REJEITADO">Rejeitado</option>
+              <option value="PAGO">Pago</option>
+              <option value="CANCELADO">Cancelado</option>
+            </select>
+            <Badge variant="subtle" colorPalette="red" borderRadius="999px" px={3} py={1} fontSize="10px" fontWeight="700">
+              Atualização contínua
+            </Badge>
+          </Flex>
         </Flex>
         
         {recentActivities.length > 0 ? (

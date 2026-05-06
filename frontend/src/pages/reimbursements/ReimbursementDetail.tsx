@@ -5,7 +5,7 @@ import * as reimbursementService from '../../services/reimbursements.service';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Clock, CheckCircle, XCircle, DollarSign, Send, RotateCcw, User, FileText } from 'lucide-react';
-import { showErrorAlert, showWarningAlert, showSuccessAlert } from '../../components/ui/alerts';
+import { showErrorAlert, showWarningAlert, showSuccessAlert, showConfirmAlert } from '../../components/ui/alerts';
 
 interface ReimbursementDetailProps {
   reimbursement: any;
@@ -67,7 +67,15 @@ export const ReimbursementDetail = ({ reimbursement: initialItem, onClose, onEdi
   if (isLoading) return <Center py={10}><Spinner color="var(--p-accent)" /></Center>;
   if (!item) return <Text>Erro ao carregar detalhes.</Text>;
 
-  const handleAction = (action: string) => {
+  const handleAction = async (action: string) => {
+    const confirmationMessages: Record<string, { title: string, text: string }> = {
+      submit: { title: 'Enviar Solicitação?', text: 'Deseja enviar este rascunho para análise do gestor?' },
+      approve: { title: 'Aprovar Reembolso?', text: 'Deseja confirmar a aprovação desta solicitação?' },
+      reject: { title: 'Rejeitar Reembolso?', text: 'Deseja realmente rejeitar esta solicitação?' },
+      pay: { title: 'Confirmar Pagamento?', text: 'Deseja marcar esta solicitação como paga agora?' },
+      cancel: { title: 'Cancelar Solicitação?', text: 'Deseja realmente cancelar este reembolso?' },
+    };
+
     if (action === 'reject') {
       if (!showRejectInput) {
         setShowRejectInput(true);
@@ -78,6 +86,13 @@ export const ReimbursementDetail = ({ reimbursement: initialItem, onClose, onEdi
         return;
       }
     }
+
+    const confirm = confirmationMessages[action];
+    if (confirm) {
+      const result = await showConfirmAlert(confirm.title, confirm.text);
+      if (!result.isConfirmed) return;
+    }
+
     mutation.mutate({ action, data: { justificativa } });
   };
 

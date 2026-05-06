@@ -28,3 +28,10 @@ Object.defineProperty(window, 'matchMedia', {
 
 // Mock do alert
 window.alert = vi.fn();
+
+// Mock do SweetAlert2
+vi.mock('sweetalert2', () => ({
+  default: {
+    fire: vi.fn(() => Promise.resolve({ isConfirmed: true }))
+  }
+}));
