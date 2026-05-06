@@ -88,9 +88,7 @@ A suíte do frontend utiliza **Vitest** e **React Testing Library** (RTL).
 
 **Comandos para execução:**
 ```bash
-# Backend
 cd backend && npm test
 
-# Frontend
 cd frontend && npm run test
 ```
