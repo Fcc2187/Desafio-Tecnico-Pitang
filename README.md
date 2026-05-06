@@ -146,10 +146,23 @@ Utilize os usuários abaixo (criados via Seed) para navegar pelos diferentes flu
 
 ---
 
-## 📂 Documentação e Coleção API (Postman)
+## 📂 Testando a API (Postman Collection)
 
-Na raiz do projeto, você encontrará o arquivo `postman_collection.json`. 
-- **Dica**: Importe-o no Postman para testar todos os endpoints. Ele já possui scripts para salvar o Token JWT automaticamente após o login.
+Para facilitar a avaliação técnica, incluímos uma **Collection do Postman** completa na raiz do repositório: `postman_collection.json`.
+
+### **Como usar:**
+1. **Importação**: Abra o Postman, clique em **Import** e selecione o arquivo `postman_collection.json`.
+2. **Variáveis**: A collection utiliza a variável `{{baseUrl}}` (padrão: `http://localhost:3000`) e `{{token}}`.
+3. **Fluxo Automático**:
+   - Ao realizar a requisição de **Login** (na pasta Auth), um script automático salvará o Token JWT na variável da coleção.
+   - Todas as outras requisições já estão configuradas para usar esse token no Header `Authorization: Bearer {{token}}`.
+4. **Organização**: As rotas estão divididas por módulos (Auth, Reembolsos, Categorias, Usuários) e incluem exemplos de payloads para criação e atualização.
+
+### **Cenários de Teste Sugeridos:**
+- **Colaborador**: Crie um reembolso, faça o upload de um anexo (comprovante) e clique em **Submit**.
+- **Gestor**: Liste os reembolsos com status `ENVIADO`, detalhe um deles e clique em **Approve** ou **Reject**.
+- **Financeiro**: Liste os reembolsos `APROVADO` e clique em **Pay**.
+- **Auditoria**: Verifique a rota de **History** de um reembolso para ver toda a trilha de quem aprovou/pagou.
 
 ---
 

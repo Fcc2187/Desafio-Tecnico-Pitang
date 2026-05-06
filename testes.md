@@ -52,7 +52,6 @@ Este documento lista individualmente todos os 28 testes que garantem a qualidade
 27. **Botão Oculto (Aprovar)**: Garante que Colaboradores não vejam o botão de aprovação.
 28. **Botão Oculto (Pagar)**: Garante que Colaboradores não vejam o botão de pagamento.
 
----
 
 **Comando para rodar tudo:**
 - Backend: `npm test` (dentro da pasta backend)

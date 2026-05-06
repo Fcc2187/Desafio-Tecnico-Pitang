@@ -2,6 +2,7 @@
 	"info": {
 		"_postman_id": "pitang-reimburse-id",
 		"name": "Pitang Reimburse API",
+		"description": "Collection completa e verificada para o Desafio Técnico de Controle de Solicitações de Reembolso.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -10,6 +11,20 @@
 			"item": [
 				{
 					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set(\"token\", response.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
@@ -32,7 +47,108 @@
 								"login"
 							]
 						}
-					}
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Novo Usuário\",\n    \"email\": \"novo@pitang.com\",\n    \"senha\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get Profile (Me)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Users (ADMIN)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Profile/Role (ADMIN)",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"perfil\": \"GESTOR\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -53,7 +169,50 @@
 								"reimbursements"
 							]
 						}
-					}
+					},
+					"response": []
+				},
+				{
+					"name": "Dashboard Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/reimbursements/stats",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reimbursements",
+								"stats"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Detail",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/reimbursements/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reimbursements",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
 				},
 				{
 					"name": "Create Reimbursement",
@@ -62,7 +221,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"descricao\": \"Almoço com cliente\",\n    \"valor\": 150.50,\n    \"dataDespesa\": \"2024-05-04T12:00:00Z\",\n    \"categoriaId\": \"uuid-da-categoria\"\n}",
+							"raw": "{\n    \"descricao\": \"Almoço com cliente\",\n    \"valor\": 150.50,\n    \"dataDespesa\": \"2024-05-06T12:00:00Z\",\n    \"categoriaId\": \"uuid-da-categoria\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -78,7 +237,270 @@
 								"reimbursements"
 							]
 						}
-					}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Reimbursement",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"descricao\": \"Almoço com cliente (Editado)\",\n    \"valor\": 160.00,\n    \"dataDespesa\": \"2024-05-06T13:00:00Z\",\n    \"categoriaId\": \"uuid-da-categoria\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/reimbursements/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reimbursements",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Actions",
+					"item": [
+						{
+							"name": "Submit",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/reimbursements/:id/submit",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"reimbursements",
+										":id",
+										"submit"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Approve (GESTOR)",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/reimbursements/:id/approve",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"reimbursements",
+										":id",
+										"approve"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Reject (GESTOR)",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"motivoRejeicao\": \"Valor acima do permitido para esta categoria.\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/reimbursements/:id/reject",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"reimbursements",
+										":id",
+										"reject"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Pay (FINANCEIRO)",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/reimbursements/:id/pay",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"reimbursements",
+										":id",
+										"pay"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Cancel (COLABORADOR)",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/reimbursements/:id/cancel",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"reimbursements",
+										":id",
+										"cancel"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Attachments",
+					"item": [
+						{
+							"name": "List Attachments",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/reimbursements/:id/attachments",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"reimbursements",
+										":id",
+										"attachments"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Upload/Replace Attachment",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/reimbursements/:id/attachments",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"reimbursements",
+										":id",
+										"attachments"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "History",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/reimbursements/:id/history",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reimbursements",
+								":id",
+								"history"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -99,11 +521,105 @@
 								"categories"
 							]
 						}
-					}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Category (ADMIN)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Viagem\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Category (ADMIN)",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nome\": \"Viagem de Negócios\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/categories/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categories",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Category (ADMIN)",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/categories/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"categories",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
 	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
 	"event": [
 		{
 			"listen": "prerequest",
@@ -119,10 +635,7 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					"if (pm.response.code === 200 && pm.request.url.getPath().includes('login')) {",
-					"    const response = pm.response.json();",
-					"    pm.environment.set(\"token\", response.token);",
-					"}"
+					""
 				]
 			}
 		}
