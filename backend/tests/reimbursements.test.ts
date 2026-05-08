@@ -12,13 +12,11 @@ describe('Reimbursements Module Integration Tests', () => {
   beforeEach(async () => {
     await cleanDatabase();
 
-    // Criar categoria ativa
     const category = await prisma.category.create({
       data: { nome: 'Viagem', ativo: true }
     });
     categoryId = category.id;
 
-    // Criar usuário e logar
     const password = await bcrypt.hash('password123', 10);
     const user = await prisma.user.create({
       data: {
@@ -73,7 +71,6 @@ describe('Reimbursements Module Integration Tests', () => {
   });
 
   it('should list only owner reimbursements for COLABORADOR', async () => {
-    // Criar um reembolso para o usuário logado
     await request(app)
       .post('/reimbursements')
       .set('Authorization', `Bearer ${token}`)
@@ -84,7 +81,6 @@ describe('Reimbursements Module Integration Tests', () => {
         dataDespesa: new Date().toISOString()
       });
 
-    // Criar outro usuário e outro reembolso
     const otherUser = await prisma.user.create({
       data: {
         nome: 'Outro',
@@ -203,7 +199,6 @@ describe('Reimbursements Module Integration Tests', () => {
     });
 
     it('should allow submitting a reimbursement > 1000 WITH an attachment', async () => {
-      // Adicionar anexo
       await request(app)
         .post(`/reimbursements/${reimbursementId}/attachments`)
         .set('Authorization', `Bearer ${token}`)
@@ -226,11 +221,9 @@ describe('Reimbursements Module Integration Tests', () => {
     });
 
     it('should NOT allow rejecting without a justification (400)', async () => {
-      // Primeiro enviar para análise (com anexo para passar na regra de > 1000)
       await request(app).post(`/reimbursements/${reimbursementId}/attachments`).set('Authorization', `Bearer ${token}`).attach('file', Buffer.from('f'), 'f.pdf');
       await request(app).post(`/reimbursements/${reimbursementId}/submit`).set('Authorization', `Bearer ${token}`);
 
-      // Criar e Logar como GESTOR
       const gestorPassword = await bcrypt.hash('password123', 10);
       await prisma.user.create({
         data: { nome: 'Gestor', email: 'gestor@test.com', senha: gestorPassword, perfil: 'GESTOR' }
@@ -266,7 +259,6 @@ describe('Reimbursements Module Integration Tests', () => {
     });
 
     it('should allow FINANCEIRO to pay an approved reimbursement', async () => {
-      // Fluxo completo: Rascunho -> Enviado -> Aprovado
       await request(app).post(`/reimbursements/${reimbursementId}/attachments`).set('Authorization', `Bearer ${token}`).attach('file', Buffer.from('f'), 'f.pdf');
       await request(app).post(`/reimbursements/${reimbursementId}/submit`).set('Authorization', `Bearer ${token}`);
       
@@ -275,7 +267,6 @@ describe('Reimbursements Module Integration Tests', () => {
       const lg = await request(app).post('/auth/login').send({ email: 'g@t.com', senha: 'password123' });
       await request(app).post(`/reimbursements/${reimbursementId}/approve`).set('Authorization', `Bearer ${lg.body.token}`);
 
-      // Logar como FINANCEIRO
       const finPassword = await bcrypt.hash('password123', 10);
       await prisma.user.create({ data: { nome: 'Fin', email: 'fin@test.com', senha: finPassword, perfil: 'FINANCEIRO' } });
       const loginFin = await request(app).post('/auth/login').send({ email: 'fin@test.com', senha: 'password123' });

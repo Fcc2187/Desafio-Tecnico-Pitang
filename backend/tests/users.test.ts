@@ -14,12 +14,10 @@ describe('Users Module Integration Tests (Admin)', () => {
 
     const password = await bcrypt.hash('123456', 10);
     
-    // Criar Admin
     await prisma.user.create({
       data: { nome: 'Admin', email: 'admin@test.com', senha: password, perfil: 'ADMIN' }
     });
 
-    // Criar Colaborador
     const colab = await prisma.user.create({
       data: { nome: 'Colab', email: 'colab@test.com', senha: password, perfil: 'COLABORADOR' }
     });
@@ -61,7 +59,7 @@ describe('Users Module Integration Tests (Admin)', () => {
 
   it('should return 404 when updating non-existent user', async () => {
     const response = await request(app)
-      .patch('/users/non-existent-id')
+      .patch('/users/00000000-0000-0000-0000-000000000000')
       .set('Authorization', `Bearer ${adminToken}`)
       .send({ perfil: 'GESTOR' });
 

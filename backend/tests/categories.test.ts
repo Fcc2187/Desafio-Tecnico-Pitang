@@ -13,12 +13,10 @@ describe('Categories Module Integration Tests', () => {
 
     const password = await bcrypt.hash('password123', 10);
     
-    // Criar Admin
     await prisma.user.create({
       data: { nome: 'Admin', email: 'admin@test.com', senha: password, perfil: 'ADMIN' }
     });
 
-    // Criar Colaborador
     await prisma.user.create({
       data: { nome: 'Colab', email: 'colab@test.com', senha: password, perfil: 'COLABORADOR' }
     });

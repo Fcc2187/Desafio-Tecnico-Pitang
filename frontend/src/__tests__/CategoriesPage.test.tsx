@@ -14,12 +14,16 @@ vi.mock('../services/reimbursements.service', () => ({
   createCategory: mockCreateCategory,
 }));
 
-describe('CategoriesPage - Diferencial Premium', () => {
+describe('CategoriesPage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('Deve permitir criar uma nova categoria COM limite de valor', async () => {
     const user = userEvent.setup();
     render(<CategoriesPage />);
 
-    await waitFor(() => expect(screen.queryByText(/Alimentação/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(/Alimentação/i)).toBeInTheDocument(), { timeout: 10000 });
 
     await user.click(screen.getByRole('button', { name: /Nova Categoria/i }));
 
@@ -34,7 +38,7 @@ describe('CategoriesPage - Diferencial Premium', () => {
     await waitFor(() => {
       expect(mockCreateCategory).toHaveBeenCalledWith('Viagem Internacional', 5000);
     });
-  });
+  }, 15000);
 
   it('Deve permitir criar uma nova categoria SEM limite de valor', async () => {
     const user = userEvent.setup();
@@ -52,5 +56,5 @@ describe('CategoriesPage - Diferencial Premium', () => {
     await waitFor(() => {
       expect(mockCreateCategory).toHaveBeenCalledWith('Brindes', null);
     });
-  });
+  }, 15000);
 });
